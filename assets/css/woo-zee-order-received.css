@@ -1,0 +1,291 @@
+/* ══════════════════════════════════════════════════════════════════════
+   WZP — Order Received / Thank You Page
+   ══════════════════════════════════════════════════════════════════════ */
+
+.wzp-thankyou {
+	max-width:  860px;
+	margin:     0 auto;
+	padding:    40px 24px 80px;
+	box-sizing: border-box;
+	font-family: inherit;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────── */
+.wzp-thankyou__header {
+	text-align:    center;
+	margin-bottom: 40px;
+}
+
+.wzp-thankyou__check {
+	width:   56px;
+	height:  56px;
+	margin:  0 auto 20px;
+}
+
+.wzp-thankyou__check svg { width: 100%; height: 100%; }
+
+.wzp-thankyou__title {
+	font-size:      26px;
+	font-weight:    700;
+	color:          #1a1a1a;
+	letter-spacing: -0.02em;
+	margin:         0 0 10px;
+}
+
+.wzp-thankyou__subtitle {
+	font-size: 14px;
+	color:     #6a6a6a;
+	margin:    0;
+}
+
+/* ── Meta strip ──────────────────────────────────────────────────────── */
+.wzp-thankyou__meta {
+	display:       flex;
+	flex-wrap:     wrap;
+	gap:           0;
+	border:        1px solid #e8e4df;
+	border-radius: 8px;
+	overflow:      hidden;
+	margin-bottom: 48px;
+	background:    #fff;
+}
+
+.wzp-thankyou__meta-item {
+	flex:          1;
+	min-width:     140px;
+	padding:       18px 20px;
+	border-right:  1px solid #e8e4df;
+}
+
+.wzp-thankyou__meta-item:last-child { border-right: none; }
+
+.wzp-thankyou__meta-label {
+	display:        block;
+	font-size:      10px;
+	font-weight:    700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color:          #9a9a9a;
+	margin-bottom:  6px;
+}
+
+.wzp-thankyou__meta-value {
+	display:     block;
+	font-size:   14px;
+	font-weight: 600;
+	color:       #1a1a1a;
+	line-height: 1.4;
+}
+
+/* ── Body layout ─────────────────────────────────────────────────────── */
+.wzp-thankyou__body {
+	display:               grid;
+	grid-template-columns: 1fr 300px;
+	gap:                   40px;
+	align-items:           start;
+}
+
+/* ── Section titles ──────────────────────────────────────────────────── */
+.wzp-thankyou__section {
+	margin-bottom: 32px;
+}
+
+.wzp-thankyou__section:last-child { margin-bottom: 0; }
+
+.wzp-thankyou__section-title {
+	font-size:      18px;
+	font-weight:    700;
+	color:          #1a1a1a;
+	letter-spacing: -0.01em;
+	margin:         0 0 14px;
+	padding:        0;
+	border:         none;
+}
+
+/* ── Order table ─────────────────────────────────────────────────────── */
+.wzp-thankyou__table-wrap {
+	border:        1px solid #e8e4df;
+	border-radius: 8px;
+	overflow:      hidden;
+}
+
+.wzp-thankyou__table {
+	width:           100%;
+	border-collapse: collapse;
+}
+
+.wzp-thankyou__table thead th {
+	padding:        12px 16px;
+	font-size:      11px;
+	font-weight:    700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color:          #9a9a9a;
+	background:     #f7f6f4;
+	border-bottom:  1px solid #e8e4df;
+	text-align:     left;
+}
+
+.wzp-thankyou__table thead th:last-child { text-align: right; }
+
+/* Product rows */
+.wzp-thankyou__table tbody tr {
+	border-bottom: 1px solid #f0ede9;
+}
+
+.wzp-thankyou__table tbody tr:last-child { border-bottom: none; }
+
+.wzp-thankyou__table tbody td {
+	padding:        14px 16px;
+	vertical-align: middle;
+	font-size:      14px;
+	color:          #1a1a1a;
+}
+
+.wzp-thankyou__product-cell {
+	display:     flex !important;
+	align-items: center;
+	gap:         12px;
+}
+
+.wzp-thankyou__product-thumb {
+	width:         48px;
+	height:        48px;
+	object-fit:    cover;
+	border-radius: 6px;
+	border:        1px solid #ebe8e4;
+	flex-shrink:   0;
+}
+
+.wzp-thankyou__product-info {
+	display:        flex;
+	flex-direction: column;
+	gap:            2px;
+}
+
+.wzp-thankyou__product-name {
+	font-size:       14px;
+	font-weight:     500;
+	color:           #c9a96e;
+	text-decoration: none;
+}
+
+.wzp-thankyou__product-name:hover { text-decoration: underline; }
+
+.wzp-thankyou__product-qty {
+	font-size: 12px;
+	color:     #9a9a9a;
+}
+
+.wzp-thankyou__product-total {
+	text-align:  right !important;
+	font-weight: 500 !important;
+	white-space: nowrap;
+}
+
+/* Tfoot */
+.wzp-thankyou__table tfoot tr {
+	border-top: 1px solid #f0ede9;
+}
+
+.wzp-thankyou__table tfoot th,
+.wzp-thankyou__table tfoot td {
+	padding:     12px 16px;
+	font-size:   13px;
+	color:       #4a4a4a;
+	font-weight: 500;
+}
+
+.wzp-thankyou__table tfoot th {
+	text-align: left;
+	color:      #1a1a1a;
+}
+
+.wzp-thankyou__table tfoot td { text-align: right; }
+
+.wzp-thankyou__total-row th,
+.wzp-thankyou__total-row td {
+	font-size:   16px !important;
+	font-weight: 800 !important;
+	color:       #1a1a1a !important;
+	border-top:  2px solid #1a1a1a !important;
+	padding-top: 16px !important;
+}
+
+/* ── Addresses ───────────────────────────────────────────────────────── */
+.wzp-thankyou__address {
+	display:       block;
+	font-style:    normal;
+	font-size:     14px;
+	color:         #4a4a4a;
+	line-height:   1.8;
+	border:        1px solid #e8e4df;
+	border-radius: 8px;
+	padding:       18px 20px;
+	background:    #fff;
+}
+
+.wzp-thankyou__address-phone,
+.wzp-thankyou__address-email {
+	display:     flex;
+	align-items: center;
+	gap:         6px;
+	font-size:   13px;
+	margin-top:  6px;
+	color:       #4a4a4a;
+}
+
+.wzp-thankyou__address-phone svg,
+.wzp-thankyou__address-email svg {
+	width:      15px;
+	height:     15px;
+	flex-shrink: 0;
+	color:      #9a9a9a;
+}
+
+/* ── CTA button ──────────────────────────────────────────────────────── */
+.wzp-thankyou__cta {
+	display:         inline-flex;
+	align-items:     center;
+	gap:             8px;
+	margin-top:      24px;
+	font-size:       13px;
+	font-weight:     600;
+	color:           #1a1a1a;
+	text-decoration: none;
+	letter-spacing:  0.04em;
+	transition:      gap 0.2s;
+}
+
+.wzp-thankyou__cta svg {
+	width:      16px;
+	height:     16px;
+	transition: transform 0.2s;
+}
+
+.wzp-thankyou__cta:hover svg { transform: translateX(3px); }
+
+/* ══════════════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+	.wzp-thankyou__body {
+		grid-template-columns: 1fr;
+		gap: 32px;
+	}
+
+	.wzp-thankyou__meta {
+		flex-direction: column;
+	}
+
+	.wzp-thankyou__meta-item {
+		border-right:  none;
+		border-bottom: 1px solid #e8e4df;
+		padding:       14px 16px;
+	}
+
+	.wzp-thankyou__meta-item:last-child { border-bottom: none; }
+
+	.wzp-thankyou__title { font-size: 20px; }
+}

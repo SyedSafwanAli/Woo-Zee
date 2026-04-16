@@ -1,0 +1,117 @@
+/* ══════════════════════════════════════════════════════════════════════
+   WZP — Mobile Bottom Navigation Bar
+   Visible on screens ≤ 1024px (mobile + tablet)
+   ══════════════════════════════════════════════════════════════════════ */
+
+.wzp-mobile-nav {
+	display:          none; /* shown via media query */
+	position:         fixed;
+	bottom:           0;
+	left:             0;
+	right:            0;
+	z-index:          9999;
+	background:       #ffffff;
+	border-top:       1px solid #e8e4df;
+	padding:          0;
+	padding-bottom:   env(safe-area-inset-bottom, 0px); /* iOS notch */
+	box-shadow:       0 -2px 12px rgba(0, 0, 0, 0.07);
+}
+
+.wzp-mobile-nav__list {
+	display:         flex;
+	align-items:     stretch;
+	justify-content: space-around;
+	margin:          0;
+	padding:         0;
+	list-style:      none;
+}
+
+.wzp-mobile-nav__item {
+	flex:    1;
+	display: flex;
+}
+
+.wzp-mobile-nav__link {
+	flex:            1;
+	display:         flex;
+	flex-direction:  column;
+	align-items:     center;
+	justify-content: center;
+	gap:             4px;
+	padding:         10px 4px;
+	text-decoration: none;
+	color:           #9a9a9a;
+	font-size:       10px;
+	font-weight:     500;
+	letter-spacing:  0.04em;
+	text-transform:  uppercase;
+	transition:      color 0.18s;
+	position:        relative;
+}
+
+.wzp-mobile-nav__link:hover,
+.wzp-mobile-nav__link.wzp-active {
+	color: #1a1a1a;
+}
+
+/* Icon wrapper */
+.wzp-mobile-nav__icon {
+	position: relative;
+	width:    24px;
+	height:   24px;
+	display:  flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.wzp-mobile-nav__icon svg {
+	width:  22px;
+	height: 22px;
+	stroke: currentColor;
+}
+
+/* Badge (wishlist / cart count) */
+.wzp-mobile-nav__badge {
+	position:      absolute;
+	top:           -5px;
+	right:         -7px;
+	min-width:     17px;
+	height:        17px;
+	background:    #1a1a1a;
+	color:         #fff;
+	font-size:     10px;
+	font-weight:   700;
+	border-radius: 50%;
+	display:       flex;
+	align-items:   center;
+	justify-content: center;
+	line-height:   1;
+	padding:       0 3px;
+	border:        2px solid #fff;
+}
+
+.wzp-mobile-nav__badge:empty { display: none; }
+
+/* Active dot indicator */
+.wzp-mobile-nav__link.wzp-active::after {
+	content:      '';
+	display:      block;
+	width:        4px;
+	height:       4px;
+	border-radius: 50%;
+	background:   #1a1a1a;
+	position:     absolute;
+	bottom:       4px;
+}
+
+/* ── Show only on mobile + tablet ──────────────────────────────────── */
+@media (max-width: 1024px) {
+	.wzp-mobile-nav { display: flex; flex-direction: column; }
+
+	/* Push page content up so it's not hidden behind the nav */
+	body { padding-bottom: calc(65px + env(safe-area-inset-bottom, 0px)) !important; }
+
+	/* Hide wishlist + account icons from the top navbar (shown in bottom nav instead) */
+	.wzp-nb__account-icon,
+	.wzp-nb__wishlist-icon { display: none !important; }
+}
