@@ -29,8 +29,9 @@ class WZP_Admin {
 		add_action( 'wp_ajax_wzp_clear_ig_cache',  array( __CLASS__, 'ajax_clear_ig_cache' ) );
 
 		// Category icon library AJAX.
-		add_action( 'wp_ajax_wzp_upload_icon', array( __CLASS__, 'ajax_upload_icon' ) );
-		add_action( 'wp_ajax_wzp_delete_icon', array( __CLASS__, 'ajax_delete_icon' ) );
+		add_action( 'wp_ajax_wzp_upload_icon',   array( __CLASS__, 'ajax_upload_icon' ) );
+		add_action( 'wp_ajax_wzp_delete_icon',   array( __CLASS__, 'ajax_delete_icon' ) );
+		add_action( 'wp_ajax_wzp_save_svg_icon', array( __CLASS__, 'ajax_save_svg_icon' ) );
 
 		// Lookbook product search AJAX.
 		add_action( 'wp_ajax_wzp_search_products', array( __CLASS__, 'ajax_search_products' ) );
@@ -700,6 +701,55 @@ class WZP_Admin {
 			'filename' => $filename,
 			'url'      => $url,
 			'label'    => $label,
+		) );
+	}
+
+	/**
+	 * AJAX: save pasted SVG code as a .svg file in the category-icons directory.
+	 */
+	public static function ajax_save_svg_icon() {
+		check_ajax_referer( 'wzp_save_svg_icon_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'woo-zee-plugin' ) ) );
+		}
+
+		$svg_code = isset( $_POST['svg_code'] ) ? wp_unslash( $_POST['svg_code'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+		$term_id  = isset( $_POST['term_id'] )  ? absint( $_POST['term_id'] ) : 0;
+
+		$svg_code = trim( $svg_code );
+
+		if ( empty( $svg_code ) ) {
+			wp_send_json_error( array( 'message' => __( 'No SVG code provided.', 'woo-zee-plugin' ) ) );
+		}
+
+		// Must contain an <svg> element.
+		if ( stripos( $svg_code, '<svg' ) === false ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid SVG: must contain an <svg> element.', 'woo-zee-plugin' ) ) );
+		}
+
+		// Basic sanitisation: strip <script> blocks and on* event attributes.
+		$svg_code = preg_replace( '/<script[\s\S]*?<\/script>/i', '', $svg_code );
+		$svg_code = preg_replace( '/\s+on\w+\s*=\s*(["\'])[^"\']*\1/i', '', $svg_code );
+		$svg_code = preg_replace( '/\s+on\w+\s*=\s*[^\s>]+/i', '', $svg_code );
+
+		$filename = $term_id ? 'cat-' . $term_id . '.svg' : 'icon-' . uniqid() . '.svg';
+		$dest_dir = WZP_PATH . 'assets/images/category-icons/';
+
+		if ( ! is_dir( $dest_dir ) ) {
+			wp_mkdir_p( $dest_dir );
+		}
+
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+		if ( file_put_contents( $dest_dir . $filename, $svg_code ) === false ) {
+			wp_send_json_error( array( 'message' => __( 'Failed to save SVG file. Check directory permissions.', 'woo-zee-plugin' ) ) );
+		}
+
+		$url = WZP_URL . 'assets/images/category-icons/' . rawurlencode( $filename );
+
+		wp_send_json_success( array(
+			'filename' => $filename,
+			'url'      => $url,
 		) );
 	}
 

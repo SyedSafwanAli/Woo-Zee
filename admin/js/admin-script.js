@@ -612,6 +612,7 @@
 			this.bindUploadBtn();
 			this.bindFileInput();
 			this.bindRemoveBtn();
+			this.bindSvgBtn();
 		},
 
 		// "Upload Icon" button → trigger the hidden file input on the same row.
@@ -695,6 +696,79 @@
 
 				// Hide the Remove button.
 				$( this ).hide();
+			} );
+		},
+
+		// "SVG Code" button → toggle the inline SVG editor.
+		bindSvgBtn: function () {
+			$( document ).on( 'click', '.wzp-cat-svg-btn', function () {
+				var $editor = $( this ).closest( '.wzp-cat-icon-row__actions' ).find( '.wzp-cat-svg-editor' );
+				$editor.slideToggle( 150 );
+				if ( $editor.is( ':visible' ) ) {
+					$editor.find( '.wzp-cat-svg-textarea' ).trigger( 'focus' );
+				}
+			} );
+
+			// Cancel — hide the editor.
+			$( document ).on( 'click', '.wzp-cat-svg-cancel', function () {
+				$( this ).closest( '.wzp-cat-svg-editor' ).slideUp( 150 );
+			} );
+
+			// Save — AJAX to wzp_save_svg_icon.
+			$( document ).on( 'click', '.wzp-cat-svg-save', function () {
+				var $btn     = $( this );
+				var $editor  = $btn.closest( '.wzp-cat-svg-editor' );
+				var $row     = $btn.closest( '.wzp-cat-icon-row' );
+				var $status  = $row.find( '.wzp-cat-upload-status' );
+				var svgCode  = $editor.find( '.wzp-cat-svg-textarea' ).val().trim();
+				var termId   = $row.data( 'term-id' );
+
+				if ( ! svgCode ) {
+					$status.text( 'Please paste SVG code first.' ).css( 'color', '#b32d2e' );
+					return;
+				}
+
+				$btn.prop( 'disabled', true );
+				$status.text( 'Saving…' ).css( 'color', '#666' );
+
+				$.post(
+					wzpAdmin.ajaxUrl,
+					{
+						action   : 'wzp_save_svg_icon',
+						nonce    : wzpAdmin.svgIconNonce,
+						svg_code : svgCode,
+						term_id  : termId
+					},
+					function ( res ) {
+						$btn.prop( 'disabled', false );
+
+						if ( res.success ) {
+							var icon = res.data;
+
+							// Store filename.
+							$row.find( '.wzp-cat-hidden-input' ).val( icon.filename );
+
+							// Show inline SVG preview (renders properly without CORS issues).
+							$row.find( '.wzp-cat-icon-row__preview' ).html(
+								'<div style="width:32px;height:32px;">' + svgCode + '</div>'
+							);
+
+							// Show Remove button, hide editor.
+							$row.find( '.wzp-cat-remove-btn' ).show();
+							$editor.slideUp( 150 );
+							$editor.find( '.wzp-cat-svg-textarea' ).val( '' );
+
+							$status.text( 'Saved!' ).css( 'color', '#00a32a' );
+							setTimeout( function () { $status.text( '' ); }, 2000 );
+						} else {
+							var msg = ( res.data && res.data.message ) ? res.data.message : 'Save failed.';
+							$status.text( msg ).css( 'color', '#b32d2e' );
+						}
+					}
+				).fail( function () {
+					$btn.prop( 'disabled', false );
+					$status.text( 'Request failed. Please try again.' ).css( 'color', '#b32d2e' );
+				} );
 			} );
 		}
 	};

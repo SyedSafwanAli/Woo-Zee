@@ -270,6 +270,7 @@ $wc_categories = wzp_get_wc_categories();
 			// Icon library AJAX
 			'uploadIconNonce'  => wp_create_nonce( 'wzp_upload_icon_nonce' ),
 			'deleteIconNonce'  => wp_create_nonce( 'wzp_delete_icon_nonce' ),
+			'svgIconNonce'     => wp_create_nonce( 'wzp_save_svg_icon_nonce' ),
 			'confirmDelete'        => __( 'Delete this icon? Categories using it will fall back to the default.', 'woo-zee-plugin' ),
 			// Lookbook product search
 			'searchProductsNonce'  => wp_create_nonce( 'wzp_search_products_nonce' ),
@@ -1071,6 +1072,10 @@ $wc_categories = wzp_get_wc_categories();
 								<?php esc_html_e( 'Upload Icon', 'woo-zee-plugin' ); ?>
 							</button>
 
+							<button type="button" class="button wzp-cat-svg-btn">
+								&lt;/&gt; <?php esc_html_e( 'SVG Code', 'woo-zee-plugin' ); ?>
+							</button>
+
 							<button type="button"
 							        class="button-link button-link-delete wzp-cat-remove-btn"
 							        style="<?php echo $assigned ? '' : 'display:none'; ?>"
@@ -1079,6 +1084,14 @@ $wc_categories = wzp_get_wc_categories();
 							</button>
 
 							<span class="wzp-cat-upload-status"></span>
+
+							<div class="wzp-cat-svg-editor" style="display:none;">
+								<textarea class="wzp-cat-svg-textarea" rows="4" placeholder="<?php esc_attr_e( 'Paste your <svg>...</svg> code here', 'woo-zee-plugin' ); ?>"></textarea>
+								<div class="wzp-cat-svg-editor-actions">
+									<button type="button" class="button button-primary wzp-cat-svg-save"><?php esc_html_e( 'Save', 'woo-zee-plugin' ); ?></button>
+									<button type="button" class="button wzp-cat-svg-cancel"><?php esc_html_e( 'Cancel', 'woo-zee-plugin' ); ?></button>
+								</div>
+							</div>
 						</div>
 
 					</div>
