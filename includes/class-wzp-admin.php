@@ -697,11 +697,19 @@ class WZP_Admin {
 		$label = ucwords( str_replace( array( '-', '_' ), ' ', pathinfo( $filename, PATHINFO_FILENAME ) ) );
 		$url   = WZP_URL . 'assets/images/category-icons/' . rawurlencode( $filename );
 
-		wp_send_json_success( array(
+		$response = array(
 			'filename' => $filename,
 			'url'      => $url,
 			'label'    => $label,
-		) );
+		);
+
+		// For SVG files return the raw markup so JS can render inline (avoids MIME issues).
+		if ( 'svg' === $ext ) {
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+			$response['svg_content'] = file_get_contents( $dest );
+		}
+
+		wp_send_json_success( $response );
 	}
 
 	/**

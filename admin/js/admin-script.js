@@ -657,10 +657,12 @@
 							// Store filename in hidden input.
 							$row.find( '.wzp-cat-hidden-input' ).val( icon.filename );
 
-							// Update preview thumbnail.
-							$row.find( '.wzp-cat-icon-row__preview' ).html(
-								'<img src="' + $( '<div>' ).text( icon.url ).html() + '" alt="" style="width:32px;height:32px;object-fit:contain;">'
-							);
+							// SVG: render inline to avoid MIME/CORS issues. Others: use <img>.
+							var previewHtml = icon.svg_content
+								? '<div style="width:32px;height:32px;display:flex;align-items:center;">' + icon.svg_content + '</div>'
+								: '<img src="' + $( '<div>' ).text( icon.url ).html() + '" alt="" style="width:32px;height:32px;object-fit:contain;">';
+
+							$row.find( '.wzp-cat-icon-row__preview' ).html( previewHtml );
 
 							// Show the Remove button.
 							$row.find( '.wzp-cat-remove-btn' ).show();
