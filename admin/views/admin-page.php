@@ -998,9 +998,9 @@ $wc_categories = wzp_get_wc_categories();
 		   ══════════════════════════════════════════════════════════════════ */ ?>
 		<?php if ( 'category-icons' === $active_tab ) : ?>
 		<?php
-		$all_icons      = wzp_get_category_icons();
 		$icon_assignments = (array) get_option( 'wzp_category_icons', array() );
-		$all_terms      = get_terms( array(
+		$all_icons        = wzp_get_category_icons();
+		$all_terms        = get_terms( array(
 			'taxonomy'   => 'product_cat',
 			'hide_empty' => false,
 			'orderby'    => 'name',
@@ -1012,123 +1012,73 @@ $wc_categories = wzp_get_wc_categories();
 
 			<h2 class="wzp-section-title"><?php esc_html_e( 'Category Icons', 'woo-zee-plugin' ); ?></h2>
 			<p class="description">
-				<?php esc_html_e( 'Assign a custom icon to each product category. These icons appear in the [wzp_category_carousel] on the frontend.', 'woo-zee-plugin' ); ?>
+				<?php esc_html_e( 'Upload an icon directly to each category. Supports WebP, PNG, and SVG.', 'woo-zee-plugin' ); ?>
 			</p>
 
-			<?php /* ── Icon Library (upload / delete) ── */ ?>
-			<div class="wzp-icon-library-panel">
-
-				<div class="wzp-icon-library-header">
-					<h3 class="wzp-icon-library-title">
-						<?php esc_html_e( 'Icon Library', 'woo-zee-plugin' ); ?>
-						<span class="wzp-icon-count"><?php echo count( $all_icons ); ?> <?php esc_html_e( 'icons', 'woo-zee-plugin' ); ?></span>
-					</h3>
-
-					<div class="wzp-icon-upload-area">
-						<label for="wzp-icon-files" class="wzp-upload-label button">
-							<span class="dashicons dashicons-upload" style="vertical-align:middle;margin-right:4px;"></span>
-							<?php esc_html_e( 'Choose Files', 'woo-zee-plugin' ); ?>
-						</label>
-						<input type="file" id="wzp-icon-files" accept=".webp,.png,.svg" multiple style="display:none;">
-						<button type="button" id="wzp-upload-icons-btn" class="button button-primary" disabled>
-							<?php esc_html_e( 'Upload to Library', 'woo-zee-plugin' ); ?>
-						</button>
-						<span id="wzp-upload-status" class="wzp-upload-status"></span>
-					</div>
-				</div>
-
-				<div class="wzp-lib-grid" id="wzp-lib-grid">
-					<?php foreach ( $all_icons as $icon ) : ?>
-					<div class="wzp-lib-icon" data-filename="<?php echo esc_attr( $icon['filename'] ); ?>">
-						<img src="<?php echo esc_url( $icon['url'] ); ?>"
-						     alt="<?php echo esc_attr( $icon['label'] ); ?>"
-						     loading="lazy">
-						<span class="wzp-lib-icon__name"><?php echo esc_html( $icon['label'] ); ?></span>
-						<button type="button" class="wzp-lib-icon__delete"
-						        title="<?php esc_attr_e( 'Delete icon', 'woo-zee-plugin' ); ?>"
-						        aria-label="<?php echo esc_attr( sprintf( __( 'Delete %s', 'woo-zee-plugin' ), $icon['label'] ) ); ?>">
-							<span class="dashicons dashicons-trash"></span>
-						</button>
-					</div>
-					<?php endforeach; ?>
-
-					<?php if ( empty( $all_icons ) ) : ?>
-					<p class="wzp-lib-empty"><?php esc_html_e( 'No icons yet. Upload some above.', 'woo-zee-plugin' ); ?></p>
-					<?php endif; ?>
-				</div>
-
-			</div>
-
-			<form method="post" action="options.php" novalidate>
+			<form method="post" action="options.php" novalidate id="wzp-cat-icons-form">
 				<?php settings_fields( 'wzp_cat_icons_group' ); ?>
 
 				<?php if ( empty( $all_terms ) ) : ?>
 					<p class="description"><?php esc_html_e( 'No product categories found. Please create categories in WooCommerce first.', 'woo-zee-plugin' ); ?></p>
-				<?php elseif ( empty( $all_icons ) ) : ?>
-					<p class="description"><?php esc_html_e( 'No icon files found in the plugin assets folder.', 'woo-zee-plugin' ); ?></p>
 				<?php else : ?>
 
 				<div class="wzp-cat-icon-table">
 
-					<?php /* Table header */ ?>
 					<div class="wzp-cat-icon-row wzp-cat-icon-row--head">
 						<span><?php esc_html_e( 'Category', 'woo-zee-plugin' ); ?></span>
-						<span><?php esc_html_e( 'Assigned Icon', 'woo-zee-plugin' ); ?></span>
-						<span><?php esc_html_e( 'Select Icon', 'woo-zee-plugin' ); ?></span>
+						<span><?php esc_html_e( 'Icon', 'woo-zee-plugin' ); ?></span>
+						<span><?php esc_html_e( 'Action', 'woo-zee-plugin' ); ?></span>
 					</div>
 
 					<?php foreach ( $all_terms as $term ) :
-						$assigned = $icon_assignments[ $term->term_id ] ?? '';
-						$assigned_icon = array_filter( $all_icons, fn( $ic ) => $ic['filename'] === $assigned );
-						$assigned_icon = $assigned_icon ? array_values( $assigned_icon )[0] : null;
+						$assigned      = $icon_assignments[ $term->term_id ] ?? '';
+						$icon_obj      = $assigned ? current( array_filter( $all_icons, fn( $ic ) => $ic['filename'] === $assigned ) ) : null;
+						$icon_url      = $icon_obj ? $icon_obj['url'] : '';
+						$icon_label    = $icon_obj ? $icon_obj['label'] : '';
 					?>
-					<div class="wzp-cat-icon-row">
+					<div class="wzp-cat-icon-row" data-term-id="<?php echo esc_attr( $term->term_id ); ?>">
 
-						<?php /* Category name + count */ ?>
 						<div class="wzp-cat-icon-row__cat">
 							<strong><?php echo esc_html( $term->name ); ?></strong>
 							<span class="wzp-cat-icon-row__count"><?php echo esc_html( $term->count ); ?> <?php esc_html_e( 'products', 'woo-zee-plugin' ); ?></span>
 						</div>
 
-						<?php /* Current assigned icon preview */ ?>
 						<div class="wzp-cat-icon-row__preview">
-							<?php if ( $assigned_icon ) : ?>
+							<?php if ( $icon_url ) : ?>
 								<div class="wzp-cat-icon-preview wzp-cat-icon-preview--active">
-									<img src="<?php echo esc_url( $assigned_icon['url'] ); ?>"
-									     alt="<?php echo esc_attr( $assigned_icon['label'] ); ?>">
-									<span><?php echo esc_html( $assigned_icon['label'] ); ?></span>
+									<img src="<?php echo esc_url( $icon_url ); ?>" alt="<?php echo esc_attr( $icon_label ); ?>" loading="lazy">
+									<span><?php echo esc_html( $icon_label ); ?></span>
 								</div>
 							<?php else : ?>
 								<span class="wzp-cat-icon-none"><?php esc_html_e( '— None —', 'woo-zee-plugin' ); ?></span>
 							<?php endif; ?>
 						</div>
 
-						<?php /* Icon picker grid */ ?>
-						<div class="wzp-icon-picker-grid">
+						<div class="wzp-cat-icon-row__actions">
+							<input type="hidden"
+							       name="wzp_category_icons[<?php echo esc_attr( $term->term_id ); ?>]"
+							       value="<?php echo esc_attr( $assigned ); ?>"
+							       class="wzp-cat-hidden-input">
 
-							<?php /* "None" option */ ?>
-							<label class="wzp-icon-option<?php echo '' === $assigned ? ' wzp-icon-option--selected' : ''; ?>">
-								<input type="radio"
-								       name="wzp_category_icons[<?php echo esc_attr( $term->term_id ); ?>]"
-								       value=""
-								       <?php checked( $assigned, '' ); ?>>
-								<span class="wzp-icon-option__none"><?php esc_html_e( 'None', 'woo-zee-plugin' ); ?></span>
-							</label>
+							<input type="file"
+							       class="wzp-cat-file-input"
+							       accept=".webp,.png,.svg"
+							       style="display:none"
+							       aria-label="<?php esc_attr_e( 'Upload icon', 'woo-zee-plugin' ); ?>">
 
-							<?php foreach ( $all_icons as $icon ) : ?>
-							<label class="wzp-icon-option<?php echo $assigned === $icon['filename'] ? ' wzp-icon-option--selected' : ''; ?>"
-							       title="<?php echo esc_attr( $icon['label'] ); ?>">
-								<input type="radio"
-								       name="wzp_category_icons[<?php echo esc_attr( $term->term_id ); ?>]"
-								       value="<?php echo esc_attr( $icon['filename'] ); ?>"
-								       <?php checked( $assigned, $icon['filename'] ); ?>>
-								<img src="<?php echo esc_url( $icon['url'] ); ?>"
-								     alt="<?php echo esc_attr( $icon['label'] ); ?>"
-								     loading="lazy">
-								<span><?php echo esc_html( $icon['label'] ); ?></span>
-							</label>
-							<?php endforeach; ?>
+							<button type="button" class="button wzp-cat-upload-btn">
+								<span class="dashicons dashicons-upload" style="vertical-align:middle;margin-right:3px;font-size:14px;height:14px;width:14px;"></span>
+								<?php esc_html_e( 'Upload Icon', 'woo-zee-plugin' ); ?>
+							</button>
 
+							<button type="button"
+							        class="button-link button-link-delete wzp-cat-remove-btn"
+							        style="<?php echo $assigned ? '' : 'display:none'; ?>"
+							        aria-label="<?php esc_attr_e( 'Remove icon', 'woo-zee-plugin' ); ?>">
+								<?php esc_html_e( 'Remove', 'woo-zee-plugin' ); ?>
+							</button>
+
+							<span class="wzp-cat-upload-status"></span>
 						</div>
 
 					</div>

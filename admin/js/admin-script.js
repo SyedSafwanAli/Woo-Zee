@@ -603,205 +603,99 @@
 		}
 	};
 
-	// ── 8. Icon Library — upload + delete (fully AJAX, no reload) ───────────
+	// ── 8. Category Icons — per-row direct upload ────────────────────────────
 
-	var WZP_IconLibrary = {
+	var WZP_CategoryIcons = {
 
 		init: function () {
-			if ( ! $( '#wzp-lib-grid' ).length ) { return; }
+			if ( ! $( '.wzp-cat-upload-btn' ).length ) { return; }
+			this.bindUploadBtn();
 			this.bindFileInput();
-			this.bindUpload();
-			this.bindDelete();
+			this.bindRemoveBtn();
 		},
 
-		// Enable the Upload button only when files are selected.
+		// "Upload Icon" button → trigger the hidden file input on the same row.
+		bindUploadBtn: function () {
+			$( document ).on( 'click', '.wzp-cat-upload-btn', function () {
+				$( this ).closest( '.wzp-cat-icon-row' ).find( '.wzp-cat-file-input' ).trigger( 'click' );
+			} );
+		},
+
+		// File chosen → AJAX upload.
 		bindFileInput: function () {
-			$( '#wzp-icon-files' ).on( 'change', function () {
-				$( '#wzp-upload-icons-btn' ).prop( 'disabled', ! this.files.length );
-				if ( this.files.length ) {
-					$( '#wzp-upload-status' )
-						.text( this.files.length + ' file(s) selected' )
-						.css( 'color', '#666' );
-				}
-			} );
-		},
+			$( document ).on( 'change', '.wzp-cat-file-input', function () {
+				var file = this.files[0];
+				if ( ! file ) { return; }
 
-		bindUpload: function () {
-			var self = this;
+				var $input  = $( this );
+				var $row    = $input.closest( '.wzp-cat-icon-row' );
+				var $btn    = $row.find( '.wzp-cat-upload-btn' );
+				var $status = $row.find( '.wzp-cat-upload-status' );
 
-			$( '#wzp-upload-icons-btn' ).on( 'click', function () {
-				var files = $( '#wzp-icon-files' )[0].files;
-				if ( ! files.length ) { return; }
+				$btn.prop( 'disabled', true );
+				$status.text( 'Uploading…' ).css( 'color', '#666' );
 
-				$( this ).prop( 'disabled', true );
-				self.uploadQueue( Array.from( files ), 0 );
-			} );
-		},
+				var fd = new FormData();
+				fd.append( 'action',        'wzp_upload_icon' );
+				fd.append( 'nonce',         wzpAdmin.uploadIconNonce );
+				fd.append( 'wzp_icon_file', file );
 
-		uploadQueue: function ( files, index ) {
-			var self = this;
+				$.ajax( {
+					url         : wzpAdmin.ajaxUrl,
+					type        : 'POST',
+					data        : fd,
+					processData : false,
+					contentType : false,
+					success: function ( res ) {
+						$btn.prop( 'disabled', false );
+						$input.val( '' );
 
-			if ( index >= files.length ) {
-				self.setStatus( files.length + ' icon(s) uploaded successfully!', 'success' );
-				$( '#wzp-icon-files' ).val( '' );
-				return;
-			}
-
-			var file = files[ index ];
-			var fd   = new FormData();
-			fd.append( 'action',        'wzp_upload_icon' );
-			fd.append( 'nonce',         wzpAdmin.uploadIconNonce );
-			fd.append( 'wzp_icon_file', file );
-
-			self.setStatus( 'Uploading ' + file.name + ' (' + ( index + 1 ) + '/' + files.length + ')…', 'info' );
-
-			$.ajax( {
-				url         : wzpAdmin.ajaxUrl,
-				type        : 'POST',
-				data        : fd,
-				processData : false,
-				contentType : false,
-				success: function ( res ) {
-					if ( res.success ) {
-						self.addToLibraryGrid( res.data );
-						self.addToAllPickers( res.data );
-						self.uploadQueue( files, index + 1 );
-					} else {
-						self.setStatus( file.name + ': ' + res.data.message, 'error' );
-						$( '#wzp-upload-icons-btn' ).prop( 'disabled', false );
-					}
-				},
-				error: function () {
-					self.setStatus( 'Upload failed for ' + file.name + '. Please try again.', 'error' );
-					$( '#wzp-upload-icons-btn' ).prop( 'disabled', false );
-				}
-			} );
-		},
-
-		// Add new icon card to the library grid.
-		addToLibraryGrid: function ( icon ) {
-			$( '#wzp-lib-grid .wzp-lib-empty' ).remove();
-
-			var $item = $( '<div class="wzp-lib-icon wzp-lib-icon--new"></div>' )
-				.attr( 'data-filename', icon.filename )
-				.append( $( '<img loading="lazy">' ).attr( { src: icon.url, alt: icon.label } ) )
-				.append( $( '<span class="wzp-lib-icon__name"></span>' ).text( icon.label ) )
-				.append(
-					$( '<button type="button" class="wzp-lib-icon__delete"></button>' )
-						.attr( 'title', 'Delete icon' )
-						.append( '<span class="dashicons dashicons-trash"></span>' )
-				);
-
-			$( '#wzp-lib-grid' ).append( $item );
-			setTimeout( function () { $item.removeClass( 'wzp-lib-icon--new' ); }, 1000 );
-			this.updateCount();
-		},
-
-		// Inject a new radio option into every category's picker grid.
-		addToAllPickers: function ( icon ) {
-			$( '.wzp-icon-picker-grid' ).each( function () {
-				var $grid = $( this );
-				// Get the radio name from the first existing radio (e.g. wzp_category_icons[5]).
-				var name = $grid.find( 'input[type="radio"]' ).first().attr( 'name' );
-				if ( ! name ) { return; }
-
-				var $label = $( '<label class="wzp-icon-option"></label>' )
-					.attr( 'title', icon.label )
-					.append(
-						$( '<input type="radio">' )
-							.attr( 'name', name )
-							.attr( 'value', icon.filename )
-					)
-					.append(
-						$( '<img loading="lazy">' ).attr( { src: icon.url, alt: icon.label } )
-					)
-					.append(
-						$( '<span></span>' ).text( icon.label )
-					);
-
-				$grid.append( $label );
-			} );
-		},
-
-		bindDelete: function () {
-			var self = this;
-
-			$( '#wzp-lib-grid' ).on( 'click', '.wzp-lib-icon__delete', function () {
-				var $item    = $( this ).closest( '.wzp-lib-icon' );
-				var filename = $item.data( 'filename' );
-
-				if ( ! window.confirm( wzpAdmin.confirmDelete ) ) { return; }
-
-				var $btn = $( this ).prop( 'disabled', true );
-
-				$.post(
-					wzpAdmin.ajaxUrl,
-					{
-						action   : 'wzp_delete_icon',
-						nonce    : wzpAdmin.deleteIconNonce,
-						filename : filename
-					},
-					function ( res ) {
 						if ( res.success ) {
-							// Remove from library grid.
-							$item.addClass( 'wzp-lib-icon--removing' );
-							setTimeout( function () {
-								$item.remove();
-								self.updateCount();
-								if ( ! $( '#wzp-lib-grid .wzp-lib-icon' ).length ) {
-									$( '#wzp-lib-grid' ).append(
-										'<p class="wzp-lib-empty">No icons yet. Upload some above.</p>'
-									);
-								}
-							}, 250 );
+							var icon = res.data;
 
-							// Remove from every category picker grid.
-							self.removeFromAllPickers( filename );
+							// Store filename in hidden input.
+							$row.find( '.wzp-cat-hidden-input' ).val( icon.filename );
+
+							// Update preview thumbnail.
+							$row.find( '.wzp-cat-icon-row__preview' ).html(
+								'<img src="' + $( '<div>' ).text( icon.url ).html() + '" alt="" style="width:32px;height:32px;object-fit:contain;">'
+							);
+
+							// Show the Remove button.
+							$row.find( '.wzp-cat-remove-btn' ).show();
+
+							$status.text( 'Uploaded!' ).css( 'color', '#00a32a' );
+							setTimeout( function () { $status.text( '' ); }, 2000 );
 						} else {
-							window.alert( res.data.message );
-							$btn.prop( 'disabled', false );
+							var msg = ( res.data && res.data.message ) ? res.data.message : 'Upload failed.';
+							$status.text( msg ).css( 'color', '#b32d2e' );
 						}
+					},
+					error: function () {
+						$btn.prop( 'disabled', false );
+						$input.val( '' );
+						$status.text( 'Upload failed. Please try again.' ).css( 'color', '#b32d2e' );
 					}
-				).fail( function () {
-					window.alert( 'Delete failed. Please try again.' );
-					$btn.prop( 'disabled', false );
 				} );
 			} );
 		},
 
-		// Remove a radio option from every category picker, reset if it was checked.
-		removeFromAllPickers: function ( filename ) {
-			$( '.wzp-icon-picker-grid' ).each( function () {
-				var $radio = $( this ).find( 'input[type="radio"][value="' + filename + '"]' );
-				if ( ! $radio.length ) { return; }
+		// "Remove" button → clear assignment on this row.
+		bindRemoveBtn: function () {
+			$( document ).on( 'click', '.wzp-cat-remove-btn', function () {
+				var $row = $( this ).closest( '.wzp-cat-icon-row' );
 
-				var wasChecked = $radio.is( ':checked' );
-				$radio.closest( 'label' ).remove();
+				// Clear hidden input.
+				$row.find( '.wzp-cat-hidden-input' ).val( '' );
 
-				if ( wasChecked ) {
-					// Reset selection to "None" and update the assigned-icon preview.
-					var $noneRadio = $( this ).find( 'input[type="radio"][value=""]' );
-					$noneRadio.prop( 'checked', true );
+				// Reset preview to "None".
+				$row.find( '.wzp-cat-icon-row__preview' ).html(
+					'<span class="wzp-cat-icon-none">— None —</span>'
+				);
 
-					// Update the preview column for this row.
-					var $row = $( this ).closest( '.wzp-cat-icon-row' );
-					$row.find( '.wzp-cat-icon-row__preview' ).html(
-						'<span class="wzp-cat-icon-none">— None —</span>'
-					);
-				}
+				// Hide the Remove button.
+				$( this ).hide();
 			} );
-		},
-
-		updateCount: function () {
-			var count = $( '#wzp-lib-grid .wzp-lib-icon' ).length;
-			$( '.wzp-icon-count' ).text( count + ' icons' );
-		},
-
-		setStatus: function ( msg, type ) {
-			var colours = { success: '#00a32a', error: '#b32d2e', info: '#666' };
-			$( '#wzp-upload-status' )
-				.text( msg )
-				.css( 'color', colours[ type ] || colours.info );
 		}
 	};
 
@@ -1855,7 +1749,7 @@
 		WZP_TestimonialsAdmin.init();
 		WZP_InstagramAdmin.init();
 		WZP_CarouselToggle.init();
-		WZP_IconLibrary.init();
+		WZP_CategoryIcons.init();
 		WZP_BannerCards.init();
 		WZP_LookbookCanvas.init();
 		WZP_SingleBannerAdmin.init();
