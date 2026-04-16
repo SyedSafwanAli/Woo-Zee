@@ -1047,7 +1047,16 @@ $wc_categories = wzp_get_wc_categories();
 						<div class="wzp-cat-icon-row__preview">
 							<?php if ( $icon_url ) : ?>
 								<div class="wzp-cat-icon-preview wzp-cat-icon-preview--active">
-									<img src="<?php echo esc_url( $icon_url ); ?>" alt="<?php echo esc_attr( $icon_label ); ?>" loading="lazy">
+									<?php
+									$icon_file = WZP_PATH . 'assets/images/category-icons/' . $assigned;
+									if ( 'svg' === strtolower( pathinfo( $assigned, PATHINFO_EXTENSION ) ) && file_exists( $icon_file ) ) :
+										// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+										$svg_raw = file_get_contents( $icon_file );
+										echo '<div style="width:32px;height:32px;display:flex;align-items:center;">' . $svg_raw . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput
+									else :
+									?>
+										<img src="<?php echo esc_url( $icon_url ); ?>" alt="<?php echo esc_attr( $icon_label ); ?>" loading="lazy" style="width:32px;height:32px;object-fit:contain;">
+									<?php endif; ?>
 									<span><?php echo esc_html( $icon_label ); ?></span>
 								</div>
 							<?php else : ?>
