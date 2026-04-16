@@ -121,14 +121,17 @@ function wzp_render_category_carousel( $atts ) {
 						<?php
 						$term_link = get_term_link( $term );
 
-						// Priority: 1) plugin-assigned icon, 2) WC thumbnail, 3) placeholder.
-						$img_url = wzp_get_category_icon_url( $term->term_id );
+						// Priority: 1) plugin-assigned icon (inline SVG or img), 2) WC thumbnail, 3) placeholder.
+						$icon_html = wzp_get_category_icon_html( $term->term_id, 'wzp-cat-item__img' );
 
-						if ( ! $img_url ) {
+						if ( ! $icon_html ) {
 							$thumbnail_id = absint( get_term_meta( $term->term_id, 'thumbnail_id', true ) );
-							$img_url      = $thumbnail_id
-								? wp_get_attachment_image_url( $thumbnail_id, 'thumbnail' )
-								: '';
+							if ( $thumbnail_id ) {
+								$thumb_url = wp_get_attachment_image_url( $thumbnail_id, 'thumbnail' );
+								if ( $thumb_url ) {
+									$icon_html = '<img class="wzp-cat-item__img" src="' . esc_url( $thumb_url ) . '" alt="' . esc_attr( $term->name ) . '" loading="lazy">';
+								}
+							}
 						}
 						?>
 						<div class="swiper-slide wzp-cat-item">
@@ -137,11 +140,8 @@ function wzp_render_category_carousel( $atts ) {
 							   title="<?php echo esc_attr( $term->name ); ?>">
 
 								<div class="wzp-cat-item__img-wrap">
-									<?php if ( $img_url ) : ?>
-										<img src="<?php echo esc_url( $img_url ); ?>"
-										     alt="<?php echo esc_attr( $term->name ); ?>"
-										     class="wzp-cat-item__img"
-										     loading="lazy">
+									<?php if ( $icon_html ) : ?>
+										<?php echo $icon_html; // phpcs:ignore WordPress.Security.EscapeOutput ?>
 									<?php else : ?>
 										<span class="wzp-cat-item__placeholder" aria-hidden="true">
 											<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">

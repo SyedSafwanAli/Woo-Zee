@@ -158,6 +158,42 @@ class WZP_Helpers {
 
 		return WZP_URL . 'assets/images/category-icons/' . rawurlencode( $filename );
 	}
+
+	/**
+	 * Return ready-to-echo HTML for a category icon.
+	 * SVG files are output inline (avoids MIME-type issues).
+	 * PNG/WebP return an <img> tag.
+	 * Returns empty string when no icon is assigned.
+	 *
+	 * @param int    $term_id   WooCommerce product_cat term ID.
+	 * @param string $css_class Extra class for the wrapper element.
+	 * @return string HTML or empty string.
+	 */
+	public static function get_category_icon_html( $term_id, $css_class = '' ) {
+		$assignments = (array) get_option( 'wzp_category_icons', array() );
+		$filename    = $assignments[ absint( $term_id ) ] ?? '';
+
+		if ( ! $filename ) {
+			return '';
+		}
+
+		$path = WZP_PATH . 'assets/images/category-icons/' . $filename;
+
+		if ( ! file_exists( $path ) ) {
+			return '';
+		}
+
+		$class = $css_class ? ' class="' . esc_attr( $css_class ) . '"' : '';
+
+		if ( 'svg' === strtolower( pathinfo( $filename, PATHINFO_EXTENSION ) ) ) {
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+			$svg = file_get_contents( $path );
+			return '<span' . $class . ' aria-hidden="true">' . $svg . '</span>';
+		}
+
+		$url = WZP_URL . 'assets/images/category-icons/' . rawurlencode( $filename );
+		return '<img' . $class . ' src="' . esc_url( $url ) . '" alt="" loading="lazy">';
+	}
 }
 
 // ── Procedural aliases (optional convenience wrappers) ────────────────────────
@@ -191,5 +227,11 @@ if ( ! function_exists( 'wzp_get_category_icons' ) ) {
 if ( ! function_exists( 'wzp_get_category_icon_url' ) ) {
 	function wzp_get_category_icon_url( $term_id ) {
 		return WZP_Helpers::get_category_icon_url( $term_id );
+	}
+}
+
+if ( ! function_exists( 'wzp_get_category_icon_html' ) ) {
+	function wzp_get_category_icon_html( $term_id, $css_class = '' ) {
+		return WZP_Helpers::get_category_icon_html( $term_id, $css_class );
 	}
 }
