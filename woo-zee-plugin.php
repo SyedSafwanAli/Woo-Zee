@@ -1,23 +1,25 @@
 <?php
 /**
  * Plugin Name:       Woo Zee Plugin
- * Plugin URI:        https://example.com/woo-zee-plugin
+ * Plugin URI:        https://github.com/SyedSafwanAli/Woo-Zee
  * Description:       A production-ready WooCommerce companion plugin with sliders, grids, carousels, lookbook, testimonials, and Instagram feed shortcodes.
- * Version:           1.0.0
+ * Version:           1.1.0
  * Requires at least: 5.8
  * Requires PHP:      7.4
- * Author:            Your Name
- * Author URI:        https://example.com
+ * Author:            Syed Safwan Ali
+ * Author URI:        https://github.com/SyedSafwanAli
  * License:           GPL v2 or later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       woo-zee-plugin
  * Domain Path:       /languages
+ * GitHub Plugin URI: SyedSafwanAli/Woo-Zee
+ * GitHub Branch:     main
  */
 
 defined( 'ABSPATH' ) || exit;
 
 // ── Constants ────────────────────────────────────────────────────────────────
-define( 'WZP_VERSION',  '1.0.0' );
+define( 'WZP_VERSION',  '1.1.0' );
 define( 'WZP_PATH',     plugin_dir_path( __FILE__ ) );
 define( 'WZP_URL',      plugin_dir_url( __FILE__ ) );
 define( 'WZP_BASENAME', plugin_basename( __FILE__ ) );
