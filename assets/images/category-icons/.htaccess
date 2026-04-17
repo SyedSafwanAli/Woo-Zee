@@ -1,0 +1,8 @@
+# Block PHP execution — only static image files should be served from this directory.
+<FilesMatch "\.php$">
+    Deny from all
+</FilesMatch>
+
+# Disable script execution via Options
+Options -ExecCGI
+AddHandler cgi-script .php .php3 .php4 .php5 .phtml .pl .py .jsp .asp .sh .cgi

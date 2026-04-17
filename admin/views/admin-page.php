@@ -1051,8 +1051,8 @@ $wc_categories = wzp_get_wc_categories();
 									$icon_file = WZP_PATH . 'assets/images/category-icons/' . $assigned;
 									if ( 'svg' === strtolower( pathinfo( $assigned, PATHINFO_EXTENSION ) ) && file_exists( $icon_file ) ) :
 										// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
-										$svg_raw = file_get_contents( $icon_file );
-										echo '<div style="width:32px;height:32px;display:flex;align-items:center;">' . $svg_raw . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput
+										$svg_safe = WZP_Helpers::sanitize_svg( file_get_contents( $icon_file ) );
+										echo '<div style="width:32px;height:32px;display:flex;align-items:center;">' . $svg_safe . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput
 									else :
 									?>
 										<img src="<?php echo esc_url( $icon_url ); ?>" alt="<?php echo esc_attr( $icon_label ); ?>" loading="lazy" style="width:32px;height:32px;object-fit:contain;">

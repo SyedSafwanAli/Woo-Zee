@@ -672,12 +672,29 @@ class WZP_Admin {
 			wp_send_json_error( array( 'message' => __( 'No file received or upload error.', 'woo-zee-plugin' ) ) );
 		}
 
-		$file    = $_FILES['wzp_icon_file'];
-		$allowed = array( 'webp', 'png', 'svg' );
-		$ext     = strtolower( pathinfo( $file['name'], PATHINFO_EXTENSION ) );
+		$file    = $_FILES['wzp_icon_file']; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+		$allowed_exts  = array( 'webp', 'png', 'svg' );
+		$allowed_mimes = array(
+			'webp' => 'image/webp',
+			'png'  => 'image/png',
+			'svg'  => 'image/svg+xml',
+		);
 
-		if ( ! in_array( $ext, $allowed, true ) ) {
+		// Validate extension.
+		$ext = strtolower( pathinfo( $file['name'], PATHINFO_EXTENSION ) );
+		if ( ! in_array( $ext, $allowed_exts, true ) ) {
 			wp_send_json_error( array( 'message' => __( 'Only WebP, PNG, and SVG files are allowed.', 'woo-zee-plugin' ) ) );
+		}
+
+		// Validate real MIME type using WordPress helper (checks magic bytes, not user-supplied type).
+		$mime_check = wp_check_filetype_and_ext( $file['tmp_name'], $file['name'], $allowed_mimes );
+		if ( empty( $mime_check['ext'] ) || ! in_array( $mime_check['ext'], $allowed_exts, true ) ) {
+			wp_send_json_error( array( 'message' => __( 'File type does not match its content. Upload rejected.', 'woo-zee-plugin' ) ) );
+		}
+
+		// Enforce 2 MB size limit.
+		if ( $file['size'] > 2 * 1024 * 1024 ) {
+			wp_send_json_error( array( 'message' => __( 'File too large. Maximum size is 2 MB.', 'woo-zee-plugin' ) ) );
 		}
 
 		$dest_dir = WZP_PATH . 'assets/images/category-icons/';
@@ -703,10 +720,13 @@ class WZP_Admin {
 			'label'    => $label,
 		);
 
-		// For SVG files return the raw markup so JS can render inline (avoids MIME issues).
+		// SVG: sanitise then return markup for inline rendering (avoids MIME/CORS issues).
 		if ( 'svg' === $ext ) {
 			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
-			$response['svg_content'] = file_get_contents( $dest );
+			$svg_clean = WZP_Helpers::sanitize_svg( file_get_contents( $dest ) );
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+			file_put_contents( $dest, $svg_clean );
+			$response['svg_content'] = $svg_clean;
 		}
 
 		wp_send_json_success( $response );
@@ -722,26 +742,26 @@ class WZP_Admin {
 			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'woo-zee-plugin' ) ) );
 		}
 
-		$svg_code = isset( $_POST['svg_code'] ) ? wp_unslash( $_POST['svg_code'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$svg_code = isset( $_POST['svg_code'] ) ? trim( wp_unslash( $_POST['svg_code'] ) ) : '';
 		$term_id  = isset( $_POST['term_id'] )  ? absint( $_POST['term_id'] ) : 0;
-
-		$svg_code = trim( $svg_code );
 
 		if ( empty( $svg_code ) ) {
 			wp_send_json_error( array( 'message' => __( 'No SVG code provided.', 'woo-zee-plugin' ) ) );
 		}
 
-		// Must contain an <svg> element.
 		if ( stripos( $svg_code, '<svg' ) === false ) {
 			wp_send_json_error( array( 'message' => __( 'Invalid SVG: must contain an <svg> element.', 'woo-zee-plugin' ) ) );
 		}
 
-		// Basic sanitisation: strip <script> blocks and on* event attributes.
-		$svg_code = preg_replace( '/<script[\s\S]*?<\/script>/i', '', $svg_code );
-		$svg_code = preg_replace( '/\s+on\w+\s*=\s*(["\'])[^"\']*\1/i', '', $svg_code );
-		$svg_code = preg_replace( '/\s+on\w+\s*=\s*[^\s>]+/i', '', $svg_code );
+		// Sanitise with strict wp_kses() whitelist — strips scripts, events, use, foreignObject, etc.
+		$svg_code = WZP_Helpers::sanitize_svg( $svg_code );
 
-		$filename = $term_id ? 'cat-' . $term_id . '.svg' : 'icon-' . uniqid() . '.svg';
+		if ( empty( trim( $svg_code ) ) ) {
+			wp_send_json_error( array( 'message' => __( 'SVG was rejected: no safe content found after sanitisation.', 'woo-zee-plugin' ) ) );
+		}
+
+		$filename = $term_id ? 'cat-' . absint( $term_id ) . '.svg' : 'icon-' . wp_generate_uuid4() . '.svg';
 		$dest_dir = WZP_PATH . 'assets/images/category-icons/';
 
 		if ( ! is_dir( $dest_dir ) ) {
@@ -756,8 +776,9 @@ class WZP_Admin {
 		$url = WZP_URL . 'assets/images/category-icons/' . rawurlencode( $filename );
 
 		wp_send_json_success( array(
-			'filename' => $filename,
-			'url'      => $url,
+			'filename'    => $filename,
+			'url'         => $url,
+			'svg_content' => $svg_code,
 		) );
 	}
 

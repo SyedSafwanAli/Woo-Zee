@@ -79,6 +79,15 @@ class WZP_Core {
 	public static function ajax_newsletter_subscribe() {
 		check_ajax_referer( 'wzp_newsletter_nonce', 'nonce' );
 
+		// Rate-limit: max 3 attempts per IP per hour.
+		$ip         = sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ?? '' ) );
+		$rate_key   = 'wzp_nl_rate_' . md5( $ip );
+		$rate_count = (int) get_transient( $rate_key );
+		if ( $rate_count >= 3 ) {
+			wp_send_json_error( array( 'message' => __( 'Too many attempts. Please try again later.', 'woo-zee-plugin' ) ) );
+		}
+		set_transient( $rate_key, $rate_count + 1, HOUR_IN_SECONDS );
+
 		$email = sanitize_email( wp_unslash( $_POST['email'] ?? '' ) );
 
 		if ( ! is_email( $email ) ) {

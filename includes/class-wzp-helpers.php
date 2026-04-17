@@ -10,6 +10,89 @@ defined( 'ABSPATH' ) || exit;
 class WZP_Helpers {
 
 	/**
+	 * Sanitise SVG markup using a strict wp_kses() whitelist.
+	 * Removes <script>, event handlers (on*), javascript: hrefs, <use>,
+	 * <image>, <foreignObject>, and any tag/attribute not in the whitelist.
+	 *
+	 * @param string $svg Raw SVG markup.
+	 * @return string Sanitised SVG markup.
+	 */
+	public static function sanitize_svg( $svg ) {
+		$allowed_tags = array(
+			'svg'            => array(
+				'xmlns' => true, 'viewbox' => true, 'width' => true, 'height' => true,
+				'fill' => true, 'stroke' => true, 'stroke-width' => true,
+				'stroke-linecap' => true, 'stroke-linejoin' => true,
+				'stroke-miterlimit' => true, 'stroke-dasharray' => true,
+				'stroke-dashoffset' => true, 'fill-rule' => true,
+				'clip-rule' => true, 'opacity' => true, 'aria-hidden' => true,
+				'class' => true, 'style' => true, 'preserveaspectratio' => true,
+				'role' => true,
+			),
+			'g'              => array(
+				'fill' => true, 'stroke' => true, 'stroke-width' => true,
+				'opacity' => true, 'class' => true, 'transform' => true,
+				'fill-rule' => true, 'clip-rule' => true,
+			),
+			'path'           => array(
+				'd' => true, 'fill' => true, 'stroke' => true, 'stroke-width' => true,
+				'stroke-linecap' => true, 'stroke-linejoin' => true,
+				'fill-rule' => true, 'clip-rule' => true, 'opacity' => true,
+				'class' => true, 'transform' => true,
+			),
+			'circle'         => array(
+				'cx' => true, 'cy' => true, 'r' => true, 'fill' => true,
+				'stroke' => true, 'stroke-width' => true, 'opacity' => true,
+				'class' => true, 'transform' => true,
+			),
+			'ellipse'        => array(
+				'cx' => true, 'cy' => true, 'rx' => true, 'ry' => true,
+				'fill' => true, 'stroke' => true, 'stroke-width' => true,
+				'opacity' => true, 'class' => true, 'transform' => true,
+			),
+			'rect'           => array(
+				'x' => true, 'y' => true, 'width' => true, 'height' => true,
+				'rx' => true, 'ry' => true, 'fill' => true, 'stroke' => true,
+				'stroke-width' => true, 'opacity' => true, 'class' => true,
+				'transform' => true,
+			),
+			'line'           => array(
+				'x1' => true, 'y1' => true, 'x2' => true, 'y2' => true,
+				'stroke' => true, 'stroke-width' => true, 'stroke-linecap' => true,
+				'opacity' => true, 'class' => true, 'transform' => true,
+			),
+			'polyline'       => array(
+				'points' => true, 'fill' => true, 'stroke' => true,
+				'stroke-width' => true, 'stroke-linecap' => true,
+				'stroke-linejoin' => true, 'opacity' => true, 'class' => true,
+				'transform' => true,
+			),
+			'polygon'        => array(
+				'points' => true, 'fill' => true, 'stroke' => true,
+				'stroke-width' => true, 'opacity' => true, 'class' => true,
+				'transform' => true,
+			),
+			'defs'           => array(),
+			'clippath'       => array( 'id' => true ),
+			'lineargradient' => array(
+				'id' => true, 'x1' => true, 'y1' => true, 'x2' => true, 'y2' => true,
+				'gradientunits' => true, 'gradienttransform' => true,
+			),
+			'radialgradient' => array(
+				'id' => true, 'cx' => true, 'cy' => true, 'r' => true, 'fx' => true,
+				'fy' => true, 'gradientunits' => true,
+			),
+			'stop'           => array(
+				'offset' => true, 'stop-color' => true, 'stop-opacity' => true,
+			),
+			'title'          => array(),
+			'desc'           => array(),
+		);
+
+		return wp_kses( $svg, $allowed_tags );
+	}
+
+	/**
 	 * Return the full attachment URL for a given attachment ID.
 	 * Falls back to an empty string when the ID is invalid or the file
 	 * cannot be found.
@@ -187,7 +270,7 @@ class WZP_Helpers {
 
 		if ( 'svg' === strtolower( pathinfo( $filename, PATHINFO_EXTENSION ) ) ) {
 			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
-			$svg = file_get_contents( $path );
+			$svg = self::sanitize_svg( file_get_contents( $path ) );
 			return '<span' . $class . ' aria-hidden="true">' . $svg . '</span>';
 		}
 
@@ -233,5 +316,11 @@ if ( ! function_exists( 'wzp_get_category_icon_url' ) ) {
 if ( ! function_exists( 'wzp_get_category_icon_html' ) ) {
 	function wzp_get_category_icon_html( $term_id, $css_class = '' ) {
 		return WZP_Helpers::get_category_icon_html( $term_id, $css_class );
+	}
+}
+
+if ( ! function_exists( 'wzp_sanitize_svg' ) ) {
+	function wzp_sanitize_svg( $svg ) {
+		return WZP_Helpers::sanitize_svg( $svg );
 	}
 }
