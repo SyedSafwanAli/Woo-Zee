@@ -79,6 +79,12 @@ class WZP_Core {
 	public static function ajax_newsletter_subscribe() {
 		check_ajax_referer( 'wzp_newsletter_nonce', 'nonce' );
 
+		// Honeypot — bots fill hidden fields, humans leave them empty.
+		// Return fake success so bots think they succeeded.
+		if ( ! empty( $_POST['wzp_confirm_email'] ) ) {
+			wp_send_json_success( array( 'message' => __( 'Thank you for subscribing!', 'woo-zee-plugin' ) ) );
+		}
+
 		// Rate-limit: max 3 attempts per IP per hour.
 		$ip         = sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ?? '' ) );
 		$rate_key   = 'wzp_nl_rate_' . md5( $ip );

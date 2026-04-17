@@ -277,9 +277,20 @@ class WZP_Admin {
 		// Force a fresh API fetch after any settings change.
 		delete_transient( 'wzp_instagram_feed' );
 
+		$token = sanitize_text_field( wp_unslash( $raw['access_token'] ?? '' ) );
+
+		// If the field was left blank, keep the existing encrypted token.
+		if ( '' === $token ) {
+			$existing = (array) get_option( 'wzp_instagram_options', array() );
+			$token    = $existing['access_token'] ?? '';
+		} else {
+			// Encrypt the new plaintext token before storing.
+			$token = WZP_Helpers::encrypt( $token );
+		}
+
 		return array(
-			'access_token' => sanitize_text_field( wp_unslash( $raw['access_token'] ?? '' ) ),
-			'username'     => sanitize_text_field( $raw['username']     ?? '' ),
+			'access_token' => $token,
+			'username'     => sanitize_text_field( $raw['username'] ?? '' ),
 			'count'        => min( 12, max( 1, absint( $raw['count'] ?? 6 ) ) ),
 		);
 	}

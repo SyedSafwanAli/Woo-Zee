@@ -41,7 +41,7 @@ function wzp_render_instagram_feed( $atts ) {
 		)
 	);
 
-	$token    = sanitize_text_field( $ig_opts['access_token'] );
+	$token    = WZP_Helpers::decrypt( $ig_opts['access_token'] );
 	$ig_count = min( 12, max( 1, absint( $ig_opts['count'] ) ) );
 
 	// Shortcode attribute overrides saved count.

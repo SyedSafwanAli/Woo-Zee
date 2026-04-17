@@ -29,6 +29,8 @@ $uid = 'wzp-nl-' . wp_unique_id();
 
 	<form class="wzp-newsletter__form" novalidate>
 		<?php wp_nonce_field( 'wzp_newsletter_nonce', 'wzp_nl_nonce', false ); ?>
+		<?php /* Honeypot — invisible to humans, bots fill it in */ ?>
+		<input type="text" name="wzp_confirm_email" value="" style="display:none!important;position:absolute;left:-9999px;" tabindex="-1" autocomplete="off" aria-hidden="true">
 		<input
 			type="email"
 			class="wzp-newsletter__input"
@@ -75,6 +77,7 @@ $uid = 'wzp-nl-' . wp_unique_id();
 		data.append( 'action', 'wzp_newsletter_subscribe' );
 		data.append( 'nonce',  form.querySelector( '[name="wzp_nl_nonce"]' ).value );
 		data.append( 'email',  email );
+		data.append( 'wzp_confirm_email', form.querySelector( '[name="wzp_confirm_email"]' ).value );
 
 		fetch( <?php echo wp_json_encode( esc_url( admin_url( 'admin-ajax.php' ) ) ); ?>, {
 			method: 'POST',

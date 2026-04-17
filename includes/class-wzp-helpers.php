@@ -9,6 +9,64 @@ defined( 'ABSPATH' ) || exit;
 
 class WZP_Helpers {
 
+	const ENC_PREFIX = 'wzp_enc:';
+
+	/**
+	 * Encrypt a plaintext string using AES-256-CBC keyed from AUTH_KEY.
+	 * Returns a prefixed base64 string safe for wp_options storage.
+	 *
+	 * @param string $value Plaintext.
+	 * @return string Encrypted, prefixed value.
+	 */
+	public static function encrypt( $value ) {
+		if ( empty( $value ) ) {
+			return '';
+		}
+
+		$key    = substr( hash( 'sha256', AUTH_KEY ), 0, 32 );
+		$iv_len = openssl_cipher_iv_length( 'AES-256-CBC' );
+		$iv     = openssl_random_pseudo_bytes( $iv_len );
+
+		$encrypted = openssl_encrypt( $value, 'AES-256-CBC', $key, OPENSSL_RAW_DATA, $iv );
+		if ( false === $encrypted ) {
+			return $value; // Fallback: store plaintext if openssl unavailable.
+		}
+
+		return self::ENC_PREFIX . base64_encode( $iv . $encrypted ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions
+	}
+
+	/**
+	 * Decrypt a value previously encrypted with self::encrypt().
+	 * Handles legacy plaintext values transparently.
+	 *
+	 * @param string $value Encrypted or plaintext value.
+	 * @return string Decrypted plaintext.
+	 */
+	public static function decrypt( $value ) {
+		if ( empty( $value ) ) {
+			return '';
+		}
+
+		// Not encrypted (legacy plaintext) — return as-is.
+		if ( strpos( $value, self::ENC_PREFIX ) !== 0 ) {
+			return $value;
+		}
+
+		$data   = base64_decode( substr( $value, strlen( self::ENC_PREFIX ) ), true ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions
+		$key    = substr( hash( 'sha256', AUTH_KEY ), 0, 32 );
+		$iv_len = openssl_cipher_iv_length( 'AES-256-CBC' );
+
+		if ( strlen( $data ) <= $iv_len ) {
+			return '';
+		}
+
+		$iv        = substr( $data, 0, $iv_len );
+		$encrypted = substr( $data, $iv_len );
+
+		$decrypted = openssl_decrypt( $encrypted, 'AES-256-CBC', $key, OPENSSL_RAW_DATA, $iv );
+		return ( false === $decrypted ) ? '' : $decrypted;
+	}
+
 	/**
 	 * Sanitise SVG markup using a strict wp_kses() whitelist.
 	 * Removes <script>, event handlers (on*), javascript: hrefs, <use>,
