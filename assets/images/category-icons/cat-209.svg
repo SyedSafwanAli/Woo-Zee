@@ -1,0 +1,11 @@
+<svg viewBox="0 0 24 24" stroke="#111" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- necklace curve -->
+  <path d="M4 9c2.5-4 13.5-4 16 0"/>
+  
+  <!-- foxtail pattern (chevron weave hint) -->
+  <path d="M7 10l1-1 1 1 1-1 1 1 1-1 1 1 1-1 1 1"/>
+  
+  <!-- center pendant hint -->
+  <path d="M12 10.5v3"/>
+  <circle cx="12" cy="14.5" r="1.1"/>
+</svg>

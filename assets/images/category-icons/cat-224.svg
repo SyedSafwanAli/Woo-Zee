@@ -1,0 +1,11 @@
+<svg viewBox="0 0 24 24" stroke="#111" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- balanced necklace arc -->
+  <path d="M4 9c3-4 13-4 16 0"/>
+  
+  <!-- central neutral pendant -->
+  <circle cx="12" cy="13" r="1.6"/>
+  
+  <!-- balance marks (symbolic symmetry) -->
+  <path d="M7 10.5h1.5"/>
+  <path d="M15.5 10.5h1.5"/>
+</svg>

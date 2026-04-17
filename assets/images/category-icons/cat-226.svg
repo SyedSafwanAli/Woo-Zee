@@ -1,0 +1,13 @@
+<svg viewBox="0 0 24 24" stroke="#111" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- left stud -->
+  <circle cx="8" cy="10" r="2"/>
+  <path d="M8 12v2"/>
+
+  <!-- right stud -->
+  <circle cx="16" cy="10" r="2"/>
+  <path d="M16 12v2"/>
+
+  <!-- subtle sparkle hint -->
+  <path d="M12 6v1"/>
+  <path d="M11 7h2"/>
+</svg>

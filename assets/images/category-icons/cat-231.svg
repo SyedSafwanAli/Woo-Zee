@@ -1,0 +1,14 @@
+<svg viewBox="0 0 24 24" stroke="#111" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- box base -->
+  <rect x="4" y="8" width="16" height="12" rx="2"/>
+  
+  <!-- lid -->
+  <path d="M3.5 8h17"/>
+  
+  <!-- ribbon vertical -->
+  <path d="M12 8v12"/>
+  
+  <!-- ribbon bow -->
+  <path d="M12 8c-1.5-2-4-2-4 0 0 2 2.5 2 4 0z"/>
+  <path d="M12 8c1.5-2 4-2 4 0 0 2-2.5 2-4 0z"/>
+</svg>

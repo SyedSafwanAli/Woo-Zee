@@ -1,0 +1,12 @@
+<svg viewBox="0 0 24 24" stroke="#111" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- left twist -->
+  <path d="M10 4c-3 3-3 13 0 16"/>
+  
+  <!-- right twist -->
+  <path d="M14 4c3 3 3 13 0 16"/>
+  
+  <!-- cross weave hints -->
+  <path d="M10 8h4"/>
+  <path d="M10 12h4"/>
+  <path d="M10 16h4"/>
+</svg>

@@ -1,0 +1,12 @@
+<svg viewBox="0 0 24 24" stroke="#111" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- elegant necklace curve -->
+  <path d="M4 9c3-4 13-4 16 0"/>
+  
+  <!-- delicate pendant -->
+  <circle cx="12" cy="13.5" r="1.8"/>
+  
+  <!-- subtle sparkle hint -->
+  <path d="M12 10v1"/>
+  <path d="M10.8 11l.7.7"/>
+  <path d="M13.2 11l-.7.7"/>
+</svg>

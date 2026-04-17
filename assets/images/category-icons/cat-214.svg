@@ -1,0 +1,11 @@
+<svg viewBox="0 0 24 24" stroke="#111" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- smooth snake chain curve -->
+  <path d="M4 6c3 4 3 8 0 12"/>
+  <path d="M8 6c3 4 3 8 0 12"/>
+  <path d="M12 6c3 4 3 8 0 12"/>
+  <path d="M16 6c3 4 3 8 0 12"/>
+  
+  <!-- subtle endpoints -->
+  <circle cx="4" cy="6" r="1"/>
+  <circle cx="4" cy="18" r="1"/>
+</svg>

@@ -1,0 +1,11 @@
+<svg viewBox="0 0 24 24" stroke="#111" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- necklace chain curve -->
+  <path d="M4 9c2.5-4 13.5-4 16 0"/>
+  
+  <!-- chain texture (subtle segments) -->
+  <path d="M7 9.5h.5M9 9h.5M11 8.8h.5M13 8.8h.5M15 9h.5M17 9.5h.5"/>
+  
+  <!-- pendant -->
+  <path d="M12 10.5v3"/>
+  <circle cx="12" cy="15.5" r="1.3"/>
+</svg>
