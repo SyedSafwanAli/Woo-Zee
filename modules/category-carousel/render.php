@@ -185,17 +185,17 @@ function wzp_render_category_carousel( $atts ) {
 			if ( typeof Swiper === 'undefined' ) { return; }
 
 			new Swiper( '#<?php echo esc_js( $uid ); ?> .wzp-cat-carousel', {
-				slidesPerView : 3,
-				spaceBetween  : 16,
+				slidesPerView : 2,
+				spaceBetween  : 12,
 				grabCursor    : true,
 				navigation    : {
 					prevEl : '#<?php echo esc_js( $uid ); ?> .wzp-cat-prev',
 					nextEl : '#<?php echo esc_js( $uid ); ?> .wzp-cat-next',
 				},
 				breakpoints : {
-					480  : { slidesPerView: 4,  spaceBetween: 16 },
-					640  : { slidesPerView: 5,  spaceBetween: 16 },
-					900  : { slidesPerView: 7,  spaceBetween: 16 },
+					480  : { slidesPerView: 3,  spaceBetween: 14 },
+					640  : { slidesPerView: 4,  spaceBetween: 16 },
+					900  : { slidesPerView: 6,  spaceBetween: 16 },
 					1200 : { slidesPerView: <?php echo (int) $per_view; ?>, spaceBetween: 16 },
 				},
 				a11y : {
