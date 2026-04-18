@@ -18,6 +18,15 @@
 
 defined( 'ABSPATH' ) || exit;
 
+// ── Auto-updater (Plugin Update Checker — GitHub) ────────────────────────────
+require_once plugin_dir_path( __FILE__ ) . 'includes/lib/plugin-update-checker/plugin-update-checker.php';
+$wzp_update_checker = YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdateChecker(
+	'https://github.com/SyedSafwanAli/Woo-Zee/',
+	__FILE__,
+	'woo-zee-plugin'
+);
+$wzp_update_checker->setBranch( 'main' );
+
 // ── Constants ────────────────────────────────────────────────────────────────
 define( 'WZP_VERSION',  '1.1.0' );
 define( 'WZP_PATH',     plugin_dir_path( __FILE__ ) );
