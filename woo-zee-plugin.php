@@ -3,7 +3,7 @@
  * Plugin Name:       Woo Zee Plugin
  * Plugin URI:        https://github.com/SyedSafwanAli/Woo-Zee
  * Description:       A production-ready WooCommerce companion plugin with sliders, grids, carousels, lookbook, testimonials, and Instagram feed shortcodes.
- * Version:           1.1.0
+ * Version:           1.2.0
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            Syed Safwan Ali
@@ -28,7 +28,7 @@ $wzp_update_checker = YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdate
 $wzp_update_checker->setBranch( 'main' );
 
 // ── Constants ────────────────────────────────────────────────────────────────
-define( 'WZP_VERSION',  '1.1.0' );
+define( 'WZP_VERSION',  '1.2.0' );
 define( 'WZP_PATH',     plugin_dir_path( __FILE__ ) );
 define( 'WZP_URL',      plugin_dir_url( __FILE__ ) );
 define( 'WZP_BASENAME', plugin_basename( __FILE__ ) );
