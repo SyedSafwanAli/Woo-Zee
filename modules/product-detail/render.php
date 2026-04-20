@@ -112,6 +112,107 @@ $main_img_alt  = $first_img_id
 	? trim( wp_strip_all_tags( get_post_meta( $first_img_id, '_wp_attachment_image_alt', true ) ) )
 	: esc_attr( $title );
 
+// ── JSON-LD Product schema ─────────────────────────────────────────────────
+
+$raw_price     = (float) $product->get_price();
+$price_valid   = $raw_price > 0;
+$currency      = get_woocommerce_currency();
+$brand_name    = get_bloginfo( 'name' );
+$desc_plain    = wp_strip_all_tags( $product->get_description() ?: $short_desc );
+
+$schema = array(
+	'@context'    => 'https://schema.org',
+	'@type'       => 'Product',
+	'name'        => $title,
+	'description' => $desc_plain,
+	'url'         => $permalink,
+);
+
+if ( $sku ) {
+	$schema['sku'] = $sku;
+}
+
+if ( $brand_name ) {
+	$schema['brand'] = array( '@type' => 'Brand', 'name' => $brand_name );
+}
+
+// Images
+$schema_images = array();
+foreach ( $all_image_ids as $img_id ) {
+	$img_url = wp_get_attachment_image_url( $img_id, 'full' );
+	if ( $img_url ) {
+		$schema_images[] = esc_url_raw( $img_url );
+	}
+}
+if ( $schema_images ) {
+	$schema['image'] = count( $schema_images ) === 1 ? $schema_images[0] : $schema_images;
+}
+
+// Offer
+$schema['offers'] = array(
+	'@type'           => 'Offer',
+	'url'             => $permalink,
+	'priceCurrency'   => $currency,
+	'availability'    => $is_in_stock
+		? 'https://schema.org/InStock'
+		: 'https://schema.org/OutOfStock',
+	'itemCondition'   => 'https://schema.org/NewCondition',
+	'seller'          => array( '@type' => 'Organization', 'name' => $brand_name ),
+);
+if ( $price_valid ) {
+	$schema['offers']['price'] = $raw_price;
+}
+
+// AggregateRating from WooCommerce reviews
+$avg_rating    = (float) $product->get_average_rating();
+$review_count  = (int) $product->get_review_count();
+if ( $avg_rating > 0 && $review_count > 0 ) {
+	$schema['aggregateRating'] = array(
+		'@type'       => 'AggregateRating',
+		'ratingValue' => $avg_rating,
+		'reviewCount' => $review_count,
+	);
+}
+
+echo '<script type="application/ld+json">' . wp_json_encode( $schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . '</script>' . "\n";
+
+// ── BreadcrumbList schema ──────────────────────────────────────────────────
+
+$crumb_items = array(
+	array( 'name' => __( 'Home', 'woo-zee-plugin' ), 'url' => home_url( '/' ) ),
+);
+
+$cat_terms = get_the_terms( $product_id, 'product_cat' );
+if ( $cat_terms && ! is_wp_error( $cat_terms ) ) {
+	foreach ( $cat_terms as $_cat ) {
+		if ( 'uncategorized' !== $_cat->slug ) {
+			$_cat_url = get_term_link( $_cat );
+			if ( ! is_wp_error( $_cat_url ) ) {
+				$crumb_items[] = array( 'name' => $_cat->name, 'url' => $_cat_url );
+			}
+			break;
+		}
+	}
+}
+
+$crumb_items[] = array( 'name' => $title, 'url' => $permalink );
+
+$breadcrumb_schema = array(
+	'@context'        => 'https://schema.org',
+	'@type'           => 'BreadcrumbList',
+	'itemListElement' => array(),
+);
+foreach ( $crumb_items as $i => $crumb ) {
+	$breadcrumb_schema['itemListElement'][] = array(
+		'@type'    => 'ListItem',
+		'position' => $i + 1,
+		'name'     => $crumb['name'],
+		'item'     => $crumb['url'],
+	);
+}
+
+echo '<script type="application/ld+json">' . wp_json_encode( $breadcrumb_schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . '</script>' . "\n";
+
 ?>
 <section class="wzp-pd"
          data-product-id="<?php echo esc_attr( $product_id ); ?>"

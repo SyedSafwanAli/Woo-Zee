@@ -40,6 +40,7 @@ class WZP_Shortcodes {
 		'wzp_order_received'     => 'modules/order-received/render.php',
 		'wzp_search_results'     => 'modules/search/render.php',
 		'wzp_newsletter'         => 'modules/newsletter/render.php',
+		'wzp_order_tracking'     => 'modules/order-tracking/render.php',
 	);
 
 	/**

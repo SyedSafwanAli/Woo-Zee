@@ -2543,8 +2543,8 @@ $wc_categories = wzp_get_wc_categories();
 
 		var checkAll  = document.getElementById( 'wzp-nl-check-all' );
 		var bulkBtn   = document.querySelector( '.wzp-nl-bulk-delete-btn' );
-		var ajaxUrl   = ( typeof wzpAdmin !== 'undefined' ) ? wzpAdmin.ajaxUrl : '';
-		var nonce     = ( typeof wzpAdmin !== 'undefined' ) ? wzpAdmin.newsletterAdminNonce : '';
+		var ajaxUrl   = '<?php echo esc_js( admin_url( 'admin-ajax.php' ) ); ?>';
+		var nonce     = '<?php echo esc_js( wp_create_nonce( 'wzp_newsletter_admin_nonce' ) ); ?>';
 
 		function getCheckedIds() {
 			return Array.from( table.querySelectorAll( '.wzp-nl-check:checked' ) ).map( function ( el ) {

@@ -64,7 +64,7 @@ function wzp_render_hero_slider( $atts ) {
 					$label      = sanitize_text_field( $slide['label']       ?? '' );
 					$heading    = sanitize_text_field( $slide['heading']     ?? '' );
 					$desc       = sanitize_textarea_field( $slide['description'] ?? '' );
-					$btn_text   = sanitize_text_field( $slide['btn_text']    ?? '' );
+					$btn_text   = trim( preg_replace( '/[\x{2197}\x{2192}\x{279C}\x{27A4}\x{2191}\x{2198}↗→]+\s*$/u', '', sanitize_text_field( $slide['btn_text'] ?? '' ) ) );
 					$btn_url    = esc_url( $slide['btn_url']    ?? '' );
 
 					$image_url = $image_id
@@ -85,6 +85,21 @@ function wzp_render_hero_slider( $atts ) {
 							     style="background-image:url(<?php echo esc_url( $image_url ); ?>)"
 							     aria-hidden="true">
 							</div>
+							<?php if ( 0 === $index ) : ?>
+								<img src="<?php echo esc_url( $image_url ); ?>"
+								     alt="<?php echo esc_attr( $heading ?: $label ); ?>"
+								     fetchpriority="high"
+								     decoding="async"
+								     class="wzp-hero__lcp-img"
+								     style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;overflow:hidden;">
+							<?php else : ?>
+								<img src="<?php echo esc_url( $image_url ); ?>"
+								     alt="<?php echo esc_attr( $heading ?: $label ); ?>"
+								     loading="lazy"
+								     decoding="async"
+								     class="wzp-hero__lcp-img"
+								     style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;overflow:hidden;">
+							<?php endif; ?>
 						<?php endif; ?>
 
 						<div class="wzp-hero__overlay" aria-hidden="true"></div>

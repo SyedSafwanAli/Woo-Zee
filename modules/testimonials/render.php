@@ -47,6 +47,41 @@ function wzp_render_testimonials( $atts ) {
 		return '';
 	}
 
+	// ── Review + AggregateRating JSON-LD ─────────────────────────────────────
+	$review_items = array();
+	foreach ( $entries as $entry ) {
+		$r_name   = sanitize_text_field( $entry['name']   ?? '' );
+		$r_review = sanitize_textarea_field( $entry['review'] ?? '' );
+		if ( ! $r_name || ! $r_review ) { continue; }
+		$review_items[] = array(
+			'@type'         => 'Review',
+			'reviewRating'  => array(
+				'@type'       => 'Rating',
+				'ratingValue' => '5',
+				'bestRating'  => '5',
+				'worstRating' => '1',
+			),
+			'author'        => array( '@type' => 'Person', 'name' => $r_name ),
+			'reviewBody'    => $r_review,
+		);
+	}
+
+	if ( ! empty( $review_items ) ) {
+		$review_schema = array(
+			'@context'        => 'https://schema.org',
+			'@type'           => 'LocalBusiness',
+			'name'            => get_bloginfo( 'name' ),
+			'aggregateRating' => array(
+				'@type'       => 'AggregateRating',
+				'ratingValue' => '5',
+				'bestRating'  => '5',
+				'reviewCount' => count( $review_items ),
+			),
+			'review'          => $review_items,
+		);
+		echo '<script type="application/ld+json">' . wp_json_encode( $review_schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . '</script>' . "\n";
+	}
+
 	// ── Render ────────────────────────────────────────────────────────────────
 	ob_start();
 	?>

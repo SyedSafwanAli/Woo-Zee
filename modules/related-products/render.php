@@ -100,6 +100,36 @@ function wzp_render_related_products( $atts ) {
 		return '';
 	}
 
+	// ── ItemList JSON-LD ──────────────────────────────────────────────────────
+	$list_items = array();
+	$position   = 1;
+	foreach ( $query->posts as $post ) {
+		$rp = wc_get_product( $post->ID );
+		if ( ! $rp instanceof WC_Product ) { continue; }
+		$rp_img_id  = $rp->get_image_id();
+		$rp_img_url = $rp_img_id ? wp_get_attachment_image_url( $rp_img_id, 'large' ) : '';
+		$item       = array(
+			'@type'    => 'ListItem',
+			'position' => $position++,
+			'name'     => $rp->get_name(),
+			'url'      => get_permalink( $rp->get_id() ),
+		);
+		if ( $rp_img_url ) {
+			$item['image'] = $rp_img_url;
+		}
+		$list_items[] = $item;
+	}
+
+	if ( ! empty( $list_items ) ) {
+		$list_schema = array(
+			'@context'        => 'https://schema.org',
+			'@type'           => 'ItemList',
+			'name'            => $title ?: __( 'You May Also Like', 'woo-zee-plugin' ),
+			'itemListElement' => $list_items,
+		);
+		echo '<script type="application/ld+json">' . wp_json_encode( $list_schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . '</script>' . "\n";
+	}
+
 	// ── Unique instance ID ────────────────────────────────────────────────────
 
 	$uid     = 'wzp-related-' . uniqid();

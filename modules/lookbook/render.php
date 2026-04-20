@@ -184,7 +184,9 @@ function wzp_render_lookbook( $atts ) {
 					<img src="<?php echo esc_url( $image_url ); ?>"
 					     alt="<?php echo esc_attr( $heading ); ?>"
 					     class="wzp-lookbook__img"
-					     loading="lazy">
+					     loading="eager"
+					     fetchpriority="high"
+					     decoding="async">
 				<?php endif; ?>
 
 				<?php foreach ( $spot_items as $i => $item ) : ?>

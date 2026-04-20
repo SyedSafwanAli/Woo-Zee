@@ -65,21 +65,22 @@ function wzp_render_product_card( $product_id, $options = array() ) {
 	$cart_url    = $product->add_to_cart_url();
 
 	// ── Images ────────────────────────────────────────────────────────────────
-	$primary_img_id  = $product->get_image_id();
-	$primary_img_src = $primary_img_id
-		? wp_get_attachment_image_url( $primary_img_id, 'large' )
-		: wc_placeholder_img_src( 'large' );
+	$primary_img_id   = $product->get_image_id();
+	$primary_img_data = $primary_img_id ? wp_get_attachment_image_src( $primary_img_id, 'large' ) : null;
+	$primary_img_src  = $primary_img_data ? $primary_img_data[0] : wc_placeholder_img_src( 'large' );
+	$primary_img_w    = $primary_img_data ? (int) $primary_img_data[1] : 0;
+	$primary_img_h    = $primary_img_data ? (int) $primary_img_data[2] : 0;
 
-	$gallery_ids       = $product->get_gallery_image_ids();
-	$secondary_img_src = ! empty( $gallery_ids )
-		? wp_get_attachment_image_url( $gallery_ids[0], 'large' )
-		: '';
+	$gallery_ids        = $product->get_gallery_image_ids();
+	$secondary_img_data = ! empty( $gallery_ids ) ? wp_get_attachment_image_src( $gallery_ids[0], 'large' ) : null;
+	$secondary_img_src  = $secondary_img_data ? $secondary_img_data[0] : '';
 
 	// ── Badge ─────────────────────────────────────────────────────────────────
-	$is_on_sale = $product->is_on_sale();
-	$is_new     = false;
+	$is_on_sale   = $product->is_on_sale();
+	$is_new       = false;
+	$is_out_stock = ! $product->is_in_stock();
 
-	if ( ! $is_on_sale ) {
+	if ( ! $is_on_sale && ! $is_out_stock ) {
 		$date_created = $product->get_date_created();
 		if ( $date_created instanceof WC_DateTime ) {
 			$is_new = ( time() - $date_created->getTimestamp() ) <= ( 30 * DAY_IN_SECONDS );
@@ -109,9 +110,15 @@ function wzp_render_product_card( $product_id, $options = array() ) {
 			<?php /* Image + badges + action buttons */ ?>
 			<div class="wzp-product-card__media-img">
 
-				<?php if ( $opts['show_badge'] && ( $is_on_sale || $is_new ) ) : ?>
+				<?php if ( $is_out_stock ) : ?>
+				<div class="wzp-product-card__oos-overlay" aria-hidden="true"></div>
+				<?php endif; ?>
+
+				<?php if ( $opts['show_badge'] && ( $is_out_stock || $is_on_sale || $is_new ) ) : ?>
 				<div class="wzp-product-card__badges">
-					<?php if ( $is_on_sale ) : ?>
+					<?php if ( $is_out_stock ) : ?>
+					<span class="wzp-badge wzp-badge--oos"><?php esc_html_e( 'Out of Stock', 'woo-zee-plugin' ); ?></span>
+					<?php elseif ( $is_on_sale ) : ?>
 					<span class="wzp-badge wzp-badge--sale"><?php esc_html_e( 'Sale', 'woo-zee-plugin' ); ?></span>
 					<?php elseif ( $is_new ) : ?>
 					<span class="wzp-badge wzp-badge--new"><?php esc_html_e( 'New', 'woo-zee-plugin' ); ?></span>
@@ -124,12 +131,22 @@ function wzp_render_product_card( $product_id, $options = array() ) {
 					<img class="wzp-product-card__img wzp-product-card__img--primary"
 					     src="<?php echo esc_url( $primary_img_src ); ?>"
 					     alt="<?php echo esc_attr( $name ); ?>"
-					     loading="lazy">
+					     loading="lazy"
+					     decoding="async"
+					     <?php if ( $primary_img_w && $primary_img_h ) : ?>
+					     width="<?php echo esc_attr( $primary_img_w ); ?>"
+					     height="<?php echo esc_attr( $primary_img_h ); ?>"
+					     <?php endif; ?>>
 					<?php if ( $secondary_img_src ) : ?>
 					<img class="wzp-product-card__img wzp-product-card__img--secondary"
 					     src="<?php echo esc_url( $secondary_img_src ); ?>"
 					     alt="<?php echo esc_attr( $name ); ?>"
-					     loading="lazy">
+					     loading="lazy"
+					     decoding="async"
+					     <?php if ( $secondary_img_data ) : ?>
+					     width="<?php echo esc_attr( (int) $secondary_img_data[1] ); ?>"
+					     height="<?php echo esc_attr( (int) $secondary_img_data[2] ); ?>"
+					     <?php endif; ?>>
 					<?php endif; ?>
 				</a>
 
@@ -163,6 +180,11 @@ function wzp_render_product_card( $product_id, $options = array() ) {
 
 			<?php if ( $opts['show_quickadd'] ) : ?>
 			<div class="wzp-product-card__quickadd">
+				<?php if ( $is_out_stock ) : ?>
+				<span class="wzp-btn wzp-product-card__quickadd-oos">
+					<?php esc_html_e( 'Out of Stock', 'woo-zee-plugin' ); ?>
+				</span>
+				<?php else : ?>
 				<a href="<?php echo esc_url( $cart_url ); ?>"
 				   class="wzp-btn ajax_add_to_cart add_to_cart_button"
 				   data-product_id="<?php echo esc_attr( $id ); ?>"
@@ -171,6 +193,7 @@ function wzp_render_product_card( $product_id, $options = array() ) {
 				   rel="nofollow">
 					<?php esc_html_e( 'Quick Add', 'woo-zee-plugin' ); ?>
 				</a>
+				<?php endif; ?>
 			</div>
 			<?php endif; ?>
 

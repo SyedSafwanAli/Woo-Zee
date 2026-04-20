@@ -169,6 +169,29 @@
 
 .wzp-badge--sale { background: #111; color: #fff; }
 .wzp-badge--new  { background: var(--wzp-accent); color: #fff; }
+.wzp-badge--oos  { background: #6b7280; color: #fff; letter-spacing: .02em; }
+
+/* Out of stock image overlay */
+.wzp-product-card__oos-overlay {
+	position:   absolute;
+	inset:      0;
+	background: rgba(255,255,255,.55);
+	z-index:    1;
+	pointer-events: none;
+	border-radius: inherit;
+}
+
+/* Out of stock Quick Add state */
+.wzp-product-card__quickadd-oos {
+	width:          100%;
+	background:     #e5e7eb;
+	color:          #6b7280;
+	cursor:         default;
+	font-weight:    600;
+	font-size:      .8125rem;
+	letter-spacing: .02em;
+	pointer-events: none;
+}
 
 /* ── Action buttons — top right, fade in on hover ── */
 
@@ -705,8 +728,9 @@
 }
 
 .wzp-banner-card__link:hover {
-	color:        var(--wzp-accent, #c9a96e);
-	border-color: var(--wzp-accent, #c9a96e);
+	color:        #fff;
+	border-color: rgba(255,255,255,0.8);
+	font-weight:  700;
 }
 
 .wzp-banner-card__arrow {

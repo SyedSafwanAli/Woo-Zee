@@ -38,7 +38,7 @@ if ( ! $has_content ) {
 		<?php foreach ( $cards as $card ) :
 			$image_id = absint( $card['image_id'] ?? 0 );
 			$heading  = $card['heading']  ?? '';
-			$btn_text = $card['btn_text'] ?? '';
+			$btn_text = trim( preg_replace( '/[\x{2197}\x{2192}\x{279C}\x{27A4}↗→]+\s*$/u', '', $card['btn_text'] ?? '' ) );
 			$btn_url  = $card['btn_url']  ?? '';
 			$btn_icon = $card['btn_icon'] ?? '↗';
 
@@ -53,6 +53,11 @@ if ( ! $has_content ) {
 			     style="background-image:url('<?php echo esc_url( $img_url ); ?>');"
 			     role="img"
 			     aria-label="<?php echo $heading ? esc_attr( $heading ) : esc_attr__( 'Banner image', 'woo-zee-plugin' ); ?>">
+				<img src="<?php echo esc_url( $img_url ); ?>"
+				     alt="<?php echo $heading ? esc_attr( $heading ) : esc_attr__( 'Banner image', 'woo-zee-plugin' ); ?>"
+				     loading="lazy"
+				     decoding="async"
+				     style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;overflow:hidden;">
 			</div>
 
 			<div class="wzp-banner-card__overlay" aria-hidden="true"></div>
