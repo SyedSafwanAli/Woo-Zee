@@ -650,8 +650,38 @@
 			if ( ! $( '.wzp-pd' ).length ) { return; }
 			this.bindGallery();
 			this.bindQty();
+			this.bindAddToBag();
 			this.bindBuyNow();
 			this.bindShare();
+		},
+
+		// ── Add To Bag (AJAX — opens cart drawer) ─────────────────────────
+
+		bindAddToBag: function () {
+			$( document ).on( 'submit', '.wzp-pd__form', function ( e ) {
+				var $form   = $( this );
+				var $btn    = $form.find( '.wzp-pd__atc-btn' );
+
+				if ( $btn.hasClass( 'disabled' ) ) { return; }
+
+				e.preventDefault();
+
+				$btn.prop( 'disabled', true ).addClass( 'wzp-pd__atc-btn--loading' );
+
+				$.ajax( {
+					type: 'POST',
+					url:  '/?wc-ajax=add_to_cart',
+					data: $form.serialize(),
+					success: function ( response ) {
+						if ( response && ! response.error ) {
+							$( document.body ).trigger( 'added_to_cart', [ response.fragments, response.cart_hash, $btn ] );
+						}
+					},
+					complete: function () {
+						$btn.prop( 'disabled', false ).removeClass( 'wzp-pd__atc-btn--loading' );
+					}
+				} );
+			} );
 		},
 
 		// ── Thumbnail gallery ─────────────────────────────────────────────
