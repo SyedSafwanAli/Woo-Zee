@@ -659,8 +659,9 @@
 
 		bindAddToBag: function () {
 			$( document ).on( 'submit', '.wzp-pd__form', function ( e ) {
-				var $form   = $( this );
-				var $btn    = $form.find( '.wzp-pd__atc-btn' );
+				var $form      = $( this );
+				var $btn       = $form.find( '.wzp-pd__atc-btn' );
+				var productId  = $btn.val() || $form.data( 'product-id' );
 
 				if ( $btn.hasClass( 'disabled' ) ) { return; }
 
@@ -668,12 +669,17 @@
 
 				$btn.prop( 'disabled', true ).addClass( 'wzp-pd__atc-btn--loading' );
 
+				// .serialize() omits submit button value — add product_id manually.
+				var data = $form.serialize()
+					+ '&add-to-cart=' + productId
+					+ '&product_id='  + productId;
+
 				$.ajax( {
 					type: 'POST',
 					url:  '/?wc-ajax=add_to_cart',
-					data: $form.serialize(),
+					data: data,
 					success: function ( response ) {
-						if ( response && ! response.error ) {
+						if ( response ) {
 							$( document.body ).trigger( 'added_to_cart', [ response.fragments, response.cart_hash, $btn ] );
 						}
 					},
