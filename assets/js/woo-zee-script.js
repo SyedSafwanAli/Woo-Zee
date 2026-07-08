@@ -655,6 +655,14 @@
 			this.bindShare();
 		},
 
+		// Build a WooCommerce wc-ajax endpoint URL.
+		// Uses the localized template (respects subdirectory installs and the
+		// real home_url); falls back to a root-relative path if unavailable.
+		wcAjaxUrl: function ( endpoint ) {
+			var tpl = ( typeof wzpData !== 'undefined' && wzpData.wcAjaxUrl ) ? wzpData.wcAjaxUrl : '/?wc-ajax=%%endpoint%%';
+			return tpl.replace( '%%endpoint%%', endpoint );
+		},
+
 		// ── Add To Bag (AJAX — opens cart drawer) ─────────────────────────
 
 		bindAddToBag: function () {
@@ -676,12 +684,28 @@
 
 				$.ajax( {
 					type: 'POST',
-					url:  '/?wc-ajax=add_to_cart',
+					url:  WZP_ProductDetail.wcAjaxUrl( 'add_to_cart' ),
 					data: data,
+					dataType: 'json',
 					success: function ( response ) {
-						if ( response ) {
-							$( document.body ).trigger( 'added_to_cart', [ response.fragments, response.cart_hash, $btn ] );
+						if ( ! response ) { return; }
+
+						// WooCommerce returns { error: true, product_url: … } for
+						// products that must be configured on their own page
+						// (e.g. a variation not selected). Follow WC's redirect.
+						if ( response.error && response.product_url ) {
+							window.location = response.product_url;
+							return;
 						}
+
+						$( document.body ).trigger( 'added_to_cart', [ response.fragments, response.cart_hash, $btn ] );
+					},
+					error: function () {
+						// AJAX itself failed (e.g. blocked by a security plugin/WAF,
+						// or a caching layer returned non-JSON). Fall back to a full
+						// page submit so the item is still added. Native submit()
+						// does not re-fire the delegated handler, so no loop.
+						$form.get( 0 ).submit();
 					},
 					complete: function () {
 						$btn.prop( 'disabled', false ).removeClass( 'wzp-pd__atc-btn--loading' );
@@ -739,14 +763,21 @@
 				var $btn         = $( this );
 				var checkoutUrl  = $btn.data( 'checkout' );
 				var $form        = $btn.closest( '.wzp-pd__form' );
+				var productId    = $form.find( '.wzp-pd__atc-btn' ).val() || $form.data( 'product-id' );
 
 				$btn.prop( 'disabled', true );
+
+				// .serialize() omits the submit button value — add product_id
+				// manually so the item is actually added before we redirect.
+				var data = $form.serialize()
+					+ '&add-to-cart=' + productId
+					+ '&product_id='  + productId;
 
 				// Use WooCommerce's wc-ajax endpoint to silently add then redirect.
 				$.ajax( {
 					type:     'POST',
-					url:      '/?wc-ajax=add_to_cart',
-					data:     $form.serialize(),
+					url:      WZP_ProductDetail.wcAjaxUrl( 'add_to_cart' ),
+					data:     data,
 					complete: function () {
 						window.location.href = checkoutUrl;
 					}

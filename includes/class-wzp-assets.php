@@ -160,6 +160,10 @@ class WZP_Assets {
 			'wzpData',
 			array(
 				'ajaxUrl'         => esc_url( admin_url( 'admin-ajax.php' ) ),
+				// WooCommerce wc-ajax endpoint template. Respects subdirectory
+				// installs and the real home_url (the same value WooCommerce
+				// itself localizes as wc_add_to_cart_params.wc_ajax_url).
+				'wcAjaxUrl'       => class_exists( 'WC_AJAX' ) ? WC_AJAX::get_endpoint( '%%endpoint%%' ) : home_url( '/?wc-ajax=%%endpoint%%' ),
 				'nonce'           => wp_create_nonce( 'wzp_nonce' ),
 				'cartNonce'       => wp_create_nonce( 'wzp_cart_nonce' ),
 				'storeApiNonce'   => wp_create_nonce( 'wc_store_api' ),
