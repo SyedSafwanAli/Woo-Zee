@@ -690,12 +690,18 @@
 		// ── Add To Bag (AJAX — opens cart drawer) ─────────────────────────
 
 		bindAddToBag: function () {
-			$( document ).on( 'submit', '.wzp-pd__form', function ( e ) {
-				var $form      = $( this );
-				var $btn       = $form.find( '.wzp-pd__atc-btn' );
+			// We bind to the button's CLICK, not the form's `submit`. On some
+			// live sites another script (theme/plugin) breaks jQuery's delegated
+			// `submit` event, so a `$( document ).on( 'submit', … )` handler
+			// silently never fires and the form submits natively — full page
+			// reload, drawer never opens. Delegated click is reliable everywhere
+			// and preventDefault() on a submit button still stops the submission.
+			$( document ).on( 'click', '.wzp-pd__atc-btn', function ( e ) {
+				var $btn       = $( this );
+				var $form      = $btn.closest( '.wzp-pd__form' );
 				var productId  = $btn.val() || $form.data( 'product-id' );
 
-				if ( $btn.hasClass( 'disabled' ) ) { return; }
+				if ( $btn.hasClass( 'disabled' ) || $btn.prop( 'disabled' ) ) { return; }
 
 				e.preventDefault();
 
