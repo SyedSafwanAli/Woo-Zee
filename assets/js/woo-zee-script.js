@@ -443,47 +443,28 @@
 		// ── Cart drawer ───────────────────────────────────────────────────
 
 		bindCart: function () {
-			var self     = this;
-			var $drawer  = $( '.wzp-cart-drawer' );
-			var $backdrop = $( '.wzp-cart-backdrop' );
-			if ( ! $drawer.length ) { return; }
+			var self       = this;
+			this.$drawer   = $( '.wzp-cart-drawer' );
+			this.$backdrop = $( '.wzp-cart-backdrop' );
+			if ( ! this.$drawer.length ) { return; }
 
-			function openCart() {
-				$drawer.addClass( 'wzp-is-open' );
-				$backdrop.addClass( 'wzp-is-open' );
-				$( 'body' ).addClass( 'wzp-cart-open' );
-				$( '.wzp-nb__cart-trigger' ).attr( 'aria-expanded', 'true' );
-			}
+			// Move the drawer + backdrop to <body> so a transformed / overflow-
+			// hidden theme ancestor (e.g. Divi builder wrappers) cannot clip or
+			// mis-position the fixed drawer. A position:fixed element nested inside
+			// a `transform`ed ancestor is positioned relative to that ancestor,
+			// which can leave the drawer permanently off-screen even when opened.
+			this.$backdrop.appendTo( document.body );
+			this.$drawer.appendTo( document.body );
 
-			function closeCart() {
-				$drawer.removeClass( 'wzp-is-open' );
-				$backdrop.removeClass( 'wzp-is-open' );
-				$( 'body' ).removeClass( 'wzp-cart-open' );
-				$( '.wzp-nb__cart-trigger' ).attr( 'aria-expanded', 'false' );
-			}
-
-			$( document ).on( 'click', '.wzp-nb__cart-trigger', openCart );
-			$( document ).on( 'click', '.wzp-cart-drawer__close, .wzp-cart-backdrop', closeCart );
+			$( document ).on( 'click', '.wzp-nb__cart-trigger', function () { self.openCart(); } );
+			$( document ).on( 'click', '.wzp-cart-drawer__close, .wzp-cart-backdrop', function () { self.closeCart(); } );
 			$( document ).on( 'keydown', function ( e ) {
-				if ( e.key === 'Escape' || e.keyCode === 27 ) { closeCart(); }
+				if ( e.key === 'Escape' || e.keyCode === 27 ) { self.closeCart(); }
 			} );
 
-			// Refresh cart drawer and update quick-add button after AJAX add-to-cart.
+			// Open drawer + refresh after AJAX add-to-cart (archive quick-add, etc.).
 			$( document ).on( 'added_to_cart', function ( _e, _fragments, _hash, $button ) {
-				// Remove WooCommerce's injected "View cart" anchor everywhere
-				$( '.added_to_cart.wc-forward' ).remove();
-
-				self.ajaxCart( 'wzp_get_cart', {} );
-				openCart();
-
-				// Swap the clicked quick-add button → "View Cart" (black)
-				if ( $button && $button.length ) {
-					$button
-						.text( wzpData.viewCartText || 'View Cart' )
-						.attr( 'href', wzpData.cartUrl || '#' )
-						.addClass( 'wzp-quickadd--added' );
-					$button.closest( '.wzp-product-card' ).addClass( 'wzp-card--added' );
-				}
+				self.handleItemAdded( $button );
 			} );
 
 			// Qty buttons.
@@ -502,6 +483,49 @@
 				var cartKey = $( this ).closest( '.wzp-cart-item' ).data( 'cart-key' );
 				self.ajaxCart( 'wzp_remove_cart_item', { cart_key: cartKey } );
 			} );
+		},
+
+		// Open / close the drawer. Public so other modules (e.g. product detail)
+		// can open it directly without relying on the added_to_cart event
+		// bubbling through third-party handlers that might throw.
+		openCart: function () {
+			if ( ! this.$drawer || ! this.$drawer.length ) { this.$drawer = $( '.wzp-cart-drawer' ); }
+			if ( ! this.$backdrop || ! this.$backdrop.length ) { this.$backdrop = $( '.wzp-cart-backdrop' ); }
+			this.$drawer.addClass( 'wzp-is-open' );
+			this.$backdrop.addClass( 'wzp-is-open' );
+			$( 'body' ).addClass( 'wzp-cart-open' );
+			$( '.wzp-nb__cart-trigger' ).attr( 'aria-expanded', 'true' );
+		},
+
+		closeCart: function () {
+			if ( this.$drawer ) { this.$drawer.removeClass( 'wzp-is-open' ); }
+			if ( this.$backdrop ) { this.$backdrop.removeClass( 'wzp-is-open' ); }
+			$( 'body' ).removeClass( 'wzp-cart-open' );
+			$( '.wzp-nb__cart-trigger' ).attr( 'aria-expanded', 'false' );
+		},
+
+		// Central "item added" handler. Called from the added_to_cart event AND
+		// directly from the product-detail success callback. A short coalescing
+		// guard prevents a double refresh when both paths fire.
+		handleItemAdded: function ( $button ) {
+			var now = Date.now();
+			if ( now - ( this._lastAdded || 0 ) < 600 ) { return; }
+			this._lastAdded = now;
+
+			// Remove WooCommerce's injected "View cart" anchor everywhere.
+			$( '.added_to_cart.wc-forward' ).remove();
+
+			this.ajaxCart( 'wzp_get_cart', {} );
+			this.openCart();
+
+			// Swap the clicked quick-add button → "View Cart".
+			if ( $button && $button.length ) {
+				$button
+					.text( wzpData.viewCartText || 'View Cart' )
+					.attr( 'href', wzpData.cartUrl || '#' )
+					.addClass( 'wzp-quickadd--added' );
+				$button.closest( '.wzp-product-card' ).addClass( 'wzp-card--added' );
+			}
 		},
 
 		ajaxCart: function ( action, extra ) {
@@ -686,9 +710,16 @@
 					type: 'POST',
 					url:  WZP_ProductDetail.wcAjaxUrl( 'add_to_cart' ),
 					data: data,
-					dataType: 'json',
+					// No strict dataType: some live servers append extra output
+					// (cache comments, PHP notices) that would break strict JSON
+					// parsing and silently skip this success handler.
 					success: function ( response ) {
 						if ( ! response ) { return; }
+
+						// Response may arrive already parsed (object) or as a string.
+						if ( typeof response === 'string' ) {
+							try { response = JSON.parse( response ); } catch ( e ) { response = {}; }
+						}
 
 						// WooCommerce returns { error: true, product_url: … } for
 						// products that must be configured on their own page
@@ -698,7 +729,17 @@
 							return;
 						}
 
+						// Fire the standard event (analytics pixels, archive quick-add).
 						$( document.body ).trigger( 'added_to_cart', [ response.fragments, response.cart_hash, $btn ] );
+
+						// Then open the drawer directly — this does NOT rely on the
+						// event reaching our handler. A third-party added_to_cart
+						// listener that throws (e.g. a tracking pixel) would otherwise
+						// stop the chain before our drawer opens. handleItemAdded has
+						// a coalescing guard, so it still runs only once.
+						if ( typeof WZP_Navbar !== 'undefined' && typeof WZP_Navbar.handleItemAdded === 'function' ) {
+							WZP_Navbar.handleItemAdded( $btn );
+						}
 					},
 					error: function () {
 						// AJAX itself failed (e.g. blocked by a security plugin/WAF,
